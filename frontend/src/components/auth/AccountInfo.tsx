@@ -1,0 +1,174 @@
+import { useState } from "react";
+import {
+  User,
+  Mail,
+  Phone,
+  Pencil,
+  LogOut,
+  Coins,
+  ShieldCheck,
+  Check,
+  X,
+} from "lucide-react";
+import {
+  getUserName,
+  getUserEmail,
+  getPhone,
+  getpointsBalance,
+  getRole,
+  clearSession,
+} from '../../api/auth/AuthService'
+
+type FieldKey = "name" | "email" | "phone";
+
+export default function AccountInfo() {
+  const [editing, setEditing] = useState<FieldKey | null>(null);
+
+  const name = getUserName() ?? "—";
+  const email = getUserEmail() ?? "—";
+  const phone = getPhone() ?? "—";
+  const points = getpointsBalance() ?? "0";
+  const role = getRole();
+
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+
+  const fields: { key: FieldKey; label: string; value: string; icon: React.ReactNode }[] = [
+    { key: "name", label: "Nom complet", value: name, icon: <User className="h-4 w-4 text-gray-400" /> },
+    { key: "email", label: "Email", value: email, icon: <Mail className="h-4 w-4 text-gray-400" /> },
+    { key: "phone", label: "Téléphone", value: phone, icon: <Phone className="h-4 w-4 text-gray-400" /> },
+  ];
+
+  const handleLogout = () => {
+    clearSession();
+    window.location.href = "/auth/account/login";
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 px-4 py-10">
+      <div className="mx-auto w-full max-w-2xl">
+        {/* Header card */}
+        <div className="bg-[#1B2A4A] rounded-2xl px-6 py-8 sm:px-10 sm:py-10 relative overflow-hidden">
+          <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-orange-500/10" />
+          <div className="absolute -right-2 bottom-0 h-24 w-24 rounded-full bg-orange-500/10" />
+
+          <div className="relative flex items-center gap-4">
+            <div className="h-16 w-16 shrink-0 rounded-full bg-orange-500 flex items-center justify-center text-white text-xl font-bold">
+              {initials || <User className="h-7 w-7" />}
+            </div>
+            <div>
+              <h3 className="text-white text-lg sm:text-xl font-bold">{name}</h3>
+              <p className="text-slate-300 text-sm mt-0.5">{email}</p>
+              {role && (
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-orange-300 bg-orange-500/15 px-2 py-1 rounded-full">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {role}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Points balance */}
+          <div className="relative mt-6 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
+            <div className="flex items-center gap-2 text-white">
+              <Coins className="h-5 w-5 text-orange-400" />
+              <span className="text-sm font-medium">Solde de points</span>
+            </div>
+            <span className="text-white text-lg font-bold">{points} pts</span>
+          </div>
+        </div>
+
+        {/* Info card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 p-6 sm:p-8">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+            Informations personnelles
+          </h2>
+
+          <div className="space-y-3">
+            {fields.map((f) => (
+              <div
+                key={f.key}
+                className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {f.icon}
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-400">{f.label}</p>
+                    {editing === f.key ? (
+                      <input
+                        defaultValue={f.value}
+                        autoFocus
+                        className="mt-0.5 w-full text-sm font-medium text-gray-900 border-b border-orange-400 focus:outline-none bg-transparent"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-900 truncate">{f.value}</p>
+                    )}
+                  </div>
+                </div>
+
+                {editing === f.key ? (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(null)}
+                      className="p-1.5 rounded-lg text-green-600 hover:bg-green-50"
+                      aria-label="Enregistrer"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditing(null)}
+                      className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"
+                      aria-label="Annuler"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditing(f.key)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 shrink-0"
+                    aria-label={`Modifier ${f.label}`}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Password */}
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mt-8 mb-4">
+            Sécurité
+          </h2>
+          <button
+            type="button"
+            className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left hover:border-orange-300 transition-colors"
+          >
+            <div>
+              <p className="text-sm font-medium text-gray-900">Mot de passe</p>
+              <p className="text-xs text-gray-400 mt-0.5">••••••••</p>
+            </div>
+            <span className="text-xs font-medium text-orange-500">Changer</span>
+          </button>
+
+          {/* Logout */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 font-medium text-sm py-3 mt-8 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
