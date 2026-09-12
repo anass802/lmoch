@@ -1,6 +1,6 @@
 import logo from '../../assets/images/logo/lmoch.png'
 import { useState, useEffect } from 'react';
-import { Search, User, ShoppingCart, ChevronDown, Menu, X, Truck } from 'lucide-react';
+import { Search, User, ShoppingCart, ChevronDown, Menu, X, Truck, Tag,PawPrint,CalendarCheck } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getSpecies } from '../../api/ClientServices';
 import type { Species } from '../../types/Clients';
@@ -164,6 +164,13 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
                     >
                         Adoption & Vente
                     </button>
+                    <button
+                        onClick={() => { setActive("reservation"); navigate('/reservations'); }}
+                        className={`py-2 font-semibold text-sm transition-colors ${active === "cats" ? "text-[#FF7A45]" : "text-[#1A1A1A] hover:text-[#FF7A45]"}`}
+                    >
+                        Reservation
+                    </button>
+                    
                 </div>
 
                 {/* icons */}
@@ -264,15 +271,24 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
 
                         <button
                             onClick={() => handleMobileNavigate('/promotions', 'promotions')}
-                            className={`w-full text-left px-5 py-3.5 text-sm font-semibold border-b border-[#F1EFE8] ${active === "promotions" ? "text-[#FF7A45]" : "text-[#1A1A1A]"}`}
+                            className={`w-full flex items-center gap-2 text-left px-5 py-3.5 text-sm font-semibold border-b border-[#F1EFE8] text-blue-500 ${active === "promotions" ? "text-[#FF7A45]" : "text-[#1A1A1A]"}`}
                         >
+                            <Tag className="w-4 h-4 text-blue-600" />
                             Promotions
                         </button>
                         <button
                             onClick={() => handleMobileNavigate('/cats', 'cats')}
-                            className={`w-full text-left px-5 py-3.5 text-sm font-semibold ${active === "cats" ? "text-[#FF7A45]" : "text-[#1A1A1A]"}`}
+                            className={`w-full flex items-center gap-2  text-left px-5 py-3.5 text-sm font-semibold text-violet-500 ${active === "cats" ? "text-[#FF7A45]" : "text-[#1A1A1A]"}`}
                         >
-                            Adoption & Vente
+                            <PawPrint size={20} className="text-purple-600" />
+                            Adoption <span className='text-orange-500'>&</span> Vente
+                        </button>
+                        <button
+                            onClick={() => handleMobileNavigate('/reservations', 'reservations')}
+                            className={`w-full flex items-center gap-2  text-left px-5 py-3.5 text-sm font-semibold bg-gradient-to-br from-[#D9931F] to-[#FAAC2C] bg-clip-text text-transparent ${active === "reservations" ? "text-[#FF7A45]" : "text-[#1A1A1A]"}`}
+                        >
+                            <CalendarCheck size={20} className="text-orange-500" />
+                            Reservation
                         </button>
                     </div>
                 </div>

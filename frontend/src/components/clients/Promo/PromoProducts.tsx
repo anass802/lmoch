@@ -31,6 +31,7 @@ export default function PromoProducts() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-[20px] pb-4 mt-4 sm:mt-6 max-w-[1280px] mx-auto px-3 sm:px-4">
                 {products.map((pt) => {
                     const hasVariants = !!pt.variants && pt.variants.length > 0;
+                    const outOfStock = pt.stock === 0;
                     return (
                         <div
                             key={pt.id}
@@ -48,9 +49,21 @@ export default function PromoProducts() {
                             )}
                             <div
                                 onClick={() => navigate(`/get-product-details/${pt.slug}`)}
-                                className="bg-[var(--cream)] rounded-lg sm:rounded-[12px] aspect-square flex items-center justify-center mb-2 sm:mb-[14px] overflow-hidden cursor-pointer"
+                                className="bg-[var(--cream)] rounded-lg sm:rounded-[12px] aspect-square flex items-center justify-center mb-2 sm:mb-[14px] overflow-hidden cursor-pointer relative"
                             >
-                                <img src={`${url}/storage/${pt.image}`} alt={pt.name} draggable={false} className="w-full h-full object-contain" />
+                                <img
+                                    src={`${url}/storage/${pt.image}`}
+                                    alt={pt.name}
+                                    draggable={false}
+                                    className={`w-full h-full object-contain ${outOfStock ? 'opacity-50' : ''}`}
+                                />
+                                {outOfStock && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                        <span className="bg-red-600 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wide py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg shadow-md">
+                                            Rupture de stock
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                             <p className="text-xs sm:text-sm text-[#1E3A6E] font-semibold leading-[1.4] mb-1.5 sm:mb-2 min-h-[32px] sm:min-h-[38px]">
                                 {truncateWords(pt.name)}
@@ -64,8 +77,13 @@ export default function PromoProducts() {
                                 </span>
                             </div>
                             <button
-                                className="w-full bg-[#1E3A6E]/10 text-[#1E3A6E] hover:bg-[#1E3A6E] hover:text-white font-bold text-[11px] sm:text-[13px] p-2 sm:p-[10px] rounded-lg sm:rounded-[10px] transition-colors duration-150 mt-1.5 sm:mt-2"
+                                disabled={outOfStock}
+                                className={`w-full font-bold text-[11px] sm:text-[13px] p-2 sm:p-[10px] rounded-lg sm:rounded-[10px] transition-colors duration-150 mt-1.5 sm:mt-2 ${outOfStock
+                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        : 'bg-[#1E3A6E]/10 text-[#1E3A6E] hover:bg-[#1E3A6E] hover:text-white'
+                                    }`}
                                 onClick={() => {
+                                    if (outOfStock) return;
                                     if (hasVariants) {
                                         setVariantModalProduct(pt);
                                     } else {
@@ -73,7 +91,7 @@ export default function PromoProducts() {
                                     }
                                 }}
                             >
-                                Ajouter au panier
+                                {outOfStock ? 'Indisponible' : 'Ajouter au panier'}
                             </button>
                         </div>
                     )

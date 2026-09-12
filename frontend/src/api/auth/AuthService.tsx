@@ -12,6 +12,9 @@ export const register = (data: FormData) =>
   export const updatePointsBalance = (pointsBalance: number) => {
   localStorage.setItem("pointsBalance", pointsBalance.toString());
 };
+export const updateUser = (field: string, value: any) =>
+    api.post<{ message: string; field: string }>('/auth/update-user', { field, value })
+export const deleteAccount = () => api.delete<{ message: string }>('/auth/delete-account')
 
 export const updateUserInfo = (fields: Partial<{ name: string; email: string; phone: string; role: string }>) => {
   if (fields.name) localStorage.setItem("userName", fields.name);

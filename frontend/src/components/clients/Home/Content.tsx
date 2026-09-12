@@ -15,14 +15,15 @@ import { useNavigate } from 'react-router-dom'
 import VariantPickerSheet from '../ProductDetails/VariantPickerSheet'
 import { normalizeVariantForCart } from '../../../utils/normalizeVariant'
 
+
 const categories = [
-    { img: `${Jouets}`, label: 'Jouets' },
-    { img: `${Hygiene}`, label: 'Hygiene' },
-    { img: `${Litiers}`, label: 'Litiers' },
-    { img: `${Vetements}`, label: 'Vetements' },
-    { img: `${Couchage}`, label: 'Couchage' },
-    { img: `${Transport}`, label: 'Transport' },
-    { img: `${Nutrition}`, label: 'Nutrition' },
+    { img: `${Jouets}`, label: 'Jouets',path:'/categories/chat/2/jouets-chien-chat' },
+    { img: `${Hygiene}`, label: 'Hygiene', path:'/categories/chat/2/hygiene-bain-chien-chat' },
+    { img: `${Litiers}`, label: 'Litiers',path:'/categories/chat/2/litiere-bac-a-litiere-chat' },
+    { img: `${Vetements}`, label: 'Vetements',path:'/categories/chat/2/vetements-chien-chat'},
+    { img: `${Couchage}`, label: 'Transport', path:'/categories/chat/2/sac-a-dos-cage-chien-chat' },
+    { img: `${Transport}`, label: 'Couchage', path:'/categories/chat/2/coussin-niches-chien-chat' },
+    { img: `${Nutrition}`, label: 'Nutrition', path:'/categories/poisson/3/nourriture-poisson' },
 ]
 
 interface ChatProps {
@@ -77,6 +78,7 @@ function ProductScroller({ product }: { product: Product[] }) {
                     <div className="flex gap-3 sm:gap-[20px] pb-4">
                         {product.slice(0, 10).map((pt) => {
                             const hasVariants = !!pt.variants && pt.variants.length > 0;
+                            const outOfStock = pt.stock === 0;
                             return (
                                 <div
                                     key={pt.id}
@@ -100,9 +102,21 @@ function ProductScroller({ product }: { product: Product[] }) {
 
                                     <div
                                         onClick={() => navigate(`get-product-details/${pt.slug}`)}
-                                        className="bg-[var(--cream)] rounded-lg sm:rounded-[12px] aspect-square flex items-center justify-center mb-2 sm:mb-[14px] overflow-hidden cursor-pointer"
+                                        className="bg-[var(--cream)] rounded-lg sm:rounded-[12px] aspect-square flex items-center justify-center mb-2 sm:mb-[14px] overflow-hidden cursor-pointer relative"
                                     >
-                                        <img src={`${url}/storage/${pt.image}`} alt={pt.name} draggable={false} className="w-full h-full object-contain" />
+                                        <img
+                                            src={`${url}/storage/${pt.image}`}
+                                            alt={pt.name}
+                                            draggable={false}
+                                            className={`w-full h-full object-contain ${outOfStock ? 'opacity-50' : ''}`}
+                                        />
+                                        {outOfStock && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                                <span className="bg-red-600 text-white  text-[9px] sm:text-xs font-semibold uppercase tracking-wide py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg shadow-md">
+                                                    Rupture de stock
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     <p className="text-xs sm:text-sm text-[#1E3A6E] font-semibold leading-[1.4] mb-1.5 sm:mb-2 min-h-[32px] sm:min-h-[38px]">
                                         {truncateWords(pt.name)}
@@ -116,8 +130,13 @@ function ProductScroller({ product }: { product: Product[] }) {
                                         </span>
                                     </div>
                                     <button
-                                        className="w-full bg-[#1E3A6E]/10 text-[#1E3A6E] hover:bg-[#1E3A6E] hover:text-white font-bold text-[11px] sm:text-[13px] p-2 sm:p-[10px] rounded-lg sm:rounded-[10px] transition-colors duration-150 mt-1.5 sm:mt-2"
+                                        disabled={outOfStock}
+                                        className={`w-full font-bold text-[11px] sm:text-[13px] p-2 sm:p-[10px] rounded-lg sm:rounded-[10px] transition-colors duration-150 mt-1.5 sm:mt-2 ${outOfStock
+                                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'bg-[#1E3A6E]/10 text-[#1E3A6E] hover:bg-[#1E3A6E] hover:text-white'
+                                            }`}
                                         onClick={() => {
+                                            if (outOfStock) return;
                                             if (hasVariants) {
                                                 setVariantModalProduct(pt);
                                             } else {
@@ -125,12 +144,11 @@ function ProductScroller({ product }: { product: Product[] }) {
                                             }
                                         }}
                                     >
-                                        Ajouter au panier
+                                        {outOfStock ? 'Indisponible' : 'Ajouter au panier'}
                                     </button>
                                 </div>
                             )
-                        }
-                        )}
+                        })}
                     </div>
                 </div>
             </div>
@@ -149,6 +167,7 @@ function ProductScroller({ product }: { product: Product[] }) {
 }
 
 export default function Content({ jouetsChat, jouetsChien, randomProducts }: ChatProps) {
+    const navigate = useNavigate()
     return (
         <div className="max-w-[1480px] mx-auto px-4 sm:px-4">
             {/* Une sélection pensée pour votre compagnon */}
@@ -159,7 +178,7 @@ export default function Content({ jouetsChat, jouetsChien, randomProducts }: Cha
                     </h2>
                     <div className="flex gap-5 overflow-x-auto sm:overflow-visible sm:justify-between pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
                         {categories.map((cat) => (
-                            <div key={cat.label} className="flex flex-col gap-1 items-center justify-center shrink-0">
+                            <div onClick={()=> navigate(cat.path)} key={cat.label} className="flex flex-col gap-1 items-center justify-center shrink-0">
                                 <img className='w-14 h-14 sm:w-20 sm:h-20' src={cat.img} alt={cat.label} />
                                 <span className="text-xs sm:text-base whitespace-nowrap">{cat.label}</span>
                             </div>

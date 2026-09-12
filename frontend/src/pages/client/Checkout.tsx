@@ -3,25 +3,30 @@ import DeliveryOptions from "../../components/clients/Checkout/Deliveryoptions";
 import OrderSummary from "../../components/clients/Checkout/Ordersummary";
 import { MOROCCO_CITIES, type MoroccoCity } from "../../data/moroccoCities";
 import { useState } from "react";
-import { getUserName, getPhone,getUserId,updatePointsBalance } from "../../api/auth/AuthService";
+import { getUserName, getPhone,updatePointsBalance } from "../../api/auth/AuthService";
 import type { InfoClientState } from "../../types/Clients";
 import { checkout } from "../../api/ClientServices";
 import { useCart } from "../../context/CartContext";
+import SuccessModal from "../../components/Models/SuccessModal";
+import { address } from "framer-motion/client";
 
 
-
+const EMBALLAGE_PRICES: Record<string, number> = {
+    gratuit: 0,
+    standard: 5,
+    premium: 10,
+};
 type EmballageType = ''|'gratuit' | 'standard' | 'premium';
 export default function Checkout() {
     const name = getUserName() ?? "";
     const phone = getPhone() ?? "";
-    const user_id= Number(getUserId());
     const { items, clearCart } = useCart();
+    const [successOpen, setSuccessOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [orderData,setOrderData]=useState<any>(null);
+    const [shipping, setShipping] = useState(0);
     
-    
-
-
     const [form, setForm] = useState<InfoClientState>({
-        user_id,
         name,
         phone,
         city: "",
@@ -56,7 +61,7 @@ export default function Checkout() {
     const handlSubmit = async () => {
         if (!validate()) return;
         const payload = {
-        user_id: form.user_id,
+        
         name: form.name,
         phone: form.phone,
         city: form.city,
@@ -75,7 +80,25 @@ export default function Checkout() {
             const res = await checkout(payload)
             if (res.data.success) {
                 clearCart();
-                alert(res.data.message);
+                setSuccessMessage(res.data.message);
+                const emballagePrice = EMBALLAGE_PRICES[form.emballage] || 0;
+                const itemsTotal = items.reduce(
+                    (sum, i) => sum + (Number(i.price) || 0) * i.quantity,
+                    0
+                );
+                setOrderData({
+                    items,
+                    shipping,
+                    emballage:form.emballage,
+                    paid_by:form.paid_by,
+                    points_used:form.points_used,
+                    name:form.name,
+                    phone:form.phone,
+                    city:form.city,
+                    address:form.address,
+                    total: itemsTotal + shipping + emballagePrice,
+                })
+                setSuccessOpen(true);
                 if (res.data.points_balance !== null && res.data.points_balance !== undefined) {
                     updatePointsBalance(res.data.points_balance);
                 }
@@ -94,8 +117,9 @@ export default function Checkout() {
     }
 
     const [selectedCity, setSelectedCity] = useState<MoroccoCity | "">("");
-    const [shipping, setShipping] = useState(0);
+    
     return (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 px-4 py-4">
             <div className="flex flex-col gap-6">
                 <Information cities={MOROCCO_CITIES} onCityChange={setSelectedCity} form={form} setForm={setForm} errors={errors} />
@@ -103,5 +127,13 @@ export default function Checkout() {
             </div>
             <OrderSummary shipping={shipping} form={form} setForm={setForm} onSubmit={handlSubmit} emballageError={errors.emballage} />
         </div>
+        <SuccessModal
+                order={orderData}
+                open={successOpen}
+                message={successMessage}
+                onClose={() => setSuccessOpen(false)}
+            />
+        </>
+        
     );
 }

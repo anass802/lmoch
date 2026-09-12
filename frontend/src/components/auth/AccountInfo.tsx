@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Check,
   X,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getUserName,
@@ -17,12 +19,23 @@ import {
   getpointsBalance,
   getRole,
   clearSession,
+  updateUser,
+  updateUserInfo,
+  deleteAccount,
 } from '../../api/auth/AuthService'
 
 type FieldKey = "name" | "email" | "phone";
 
 export default function AccountInfo() {
   const [editing, setEditing] = useState<FieldKey | null>(null);
+  const [value, setValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const name = getUserName() ?? "—";
   const email = getUserEmail() ?? "—";
@@ -46,6 +59,46 @@ export default function AccountInfo() {
   const handleLogout = () => {
     clearSession();
     window.location.href = "/auth/account/login";
+  };
+
+  const startEditing = (f: FieldKey, currentValue: string) => {
+    setEditing(f);
+    setValue(currentValue);
+    setError(null);
+  };
+
+  const cancelEditing = () => {
+    setEditing(null);
+    setError(null);
+  };
+
+  const saveEditing = async (f: FieldKey) => {
+    if (!value.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await updateUser(f, value);
+      updateUserInfo({ [f]: value });
+      setEditing(null);
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? "Erreur lors de la mise à jour");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "SUPPRIMER") return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      clearSession();
+      window.location.href = "/auth/account/login";
+    } catch (err: any) {
+      setDeleteError(err?.response?.data?.message ?? "Erreur lors de la suppression du compte");
+      setDeleting(false);
+    }
   };
 
   return (
@@ -72,7 +125,6 @@ export default function AccountInfo() {
             </div>
           </div>
 
-          {/* Points balance */}
           <div className="relative mt-6 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
             <div className="flex items-center gap-2 text-white">
               <Coins className="h-5 w-5 text-orange-400" />
@@ -94,16 +146,21 @@ export default function AccountInfo() {
                 key={f.key}
                 className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   {f.icon}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs text-gray-400">{f.label}</p>
                     {editing === f.key ? (
-                      <input
-                        defaultValue={f.value}
-                        autoFocus
-                        className="mt-0.5 w-full text-sm font-medium text-gray-900 border-b border-orange-400 focus:outline-none bg-transparent"
-                      />
+                      <>
+                        <input
+                          value={value}
+                          onChange={(e) => setValue(e.target.value)}
+                          autoFocus
+                          disabled={saving}
+                          className="mt-0.5 w-full text-sm font-medium text-gray-900 border-b border-orange-400 focus:outline-none bg-transparent"
+                        />
+                        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+                      </>
                     ) : (
                       <p className="text-sm font-medium text-gray-900 truncate">{f.value}</p>
                     )}
@@ -114,15 +171,17 @@ export default function AccountInfo() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
-                      onClick={() => setEditing(null)}
-                      className="p-1.5 rounded-lg text-green-600 hover:bg-green-50"
+                      onClick={() => saveEditing(f.key)}
+                      disabled={saving}
+                      className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 disabled:opacity-50"
                       aria-label="Enregistrer"
                     >
                       <Check className="h-4 w-4" />
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditing(null)}
+                      onClick={cancelEditing}
+                      disabled={saving}
                       className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"
                       aria-label="Annuler"
                     >
@@ -132,7 +191,7 @@ export default function AccountInfo() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setEditing(f.key)}
+                    onClick={() => startEditing(f.key, f.value)}
                     className="p-1.5 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 shrink-0"
                     aria-label={`Modifier ${f.label}`}
                   >
@@ -167,6 +226,64 @@ export default function AccountInfo() {
             <LogOut className="h-4 w-4" />
             Se déconnecter
           </button>
+        </div>
+
+        {/* Danger zone */}
+        <div className="bg-white rounded-2xl shadow-sm border border-red-200 mt-6 p-6 sm:p-8">
+          <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Zone dangereuse
+          </h2>
+
+          {!confirmingDelete ? (
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 font-medium text-sm py-3 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer mon compte
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-700">
+                Cette action est <span className="font-semibold">irréversible</span>. Toutes vos données seront définitivement supprimées.
+              </p>
+              <p className="text-sm text-gray-500">
+                Tape <span className="font-mono font-semibold">SUPPRIMER</span> pour confirmer :
+              </p>
+              <input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                disabled={deleting}
+                placeholder="SUPPRIMER"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-400"
+              />
+              {deleteError && <p className="text-xs text-red-500">{deleteError}</p>}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  disabled={deleteConfirmText !== "SUPPRIMER" || deleting}
+                  className="flex-1 rounded-xl bg-red-600 text-white font-medium text-sm py-2.5 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
+                >
+                  {deleting ? "Suppression..." : "Confirmer la suppression"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmingDelete(false);
+                    setDeleteConfirmText("");
+                    setDeleteError(null);
+                  }}
+                  disabled={deleting}
+                  className="rounded-xl border border-gray-300 text-gray-600 font-medium text-sm px-4 py-2.5 hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

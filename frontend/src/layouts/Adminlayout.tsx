@@ -2,7 +2,8 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getUserName, getUserEmail, clearSession } from "../api/auth/AuthService";
 import logo from '../assets/images/logo/lmoch.png'
-
+import { requestFcmToken, listenForMessages } from "../firebase";
+import api from "../api/api";
 import {
   LayoutDashboard,
   Package,
@@ -14,9 +15,8 @@ import {
   Bell,
   LogOut,
   ChevronRight,
-  icons,
 } from "lucide-react";
-import { label } from "framer-motion/client";
+
 
 interface UserData {
   name: string;
@@ -30,19 +30,30 @@ const menuItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/products", label: "Produits", icon: Package },
   { to: "/admin/orders", label: "Commandes", icon: ClipboardList },
-  // { to: "/admin/clients", label: "Clients", icon: Building2 },
+  { to: "/admin/reservations", label: "Reservations", icon: Building2 },
   { to: "/admin/events", label: "Célébrations", icon: PartyPopper },
-  {to:"/admin/cats",label:"chats",icon:PawPrint}
-  
+  { to: "/admin/cats", label: "chats", icon: PawPrint }
+
 ];
 
 
 
 export default function AdminLayout() {
+  
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const [user, setUser] = useState<UserData | null>(null);
-
+  useEffect(() => {
+    (async () => {
+      const token = await requestFcmToken();
+      console.log("🔥 FCM TOKEN:", token);
+      if (token) {
+        const res = await api.post(`/save-fcm-token`, { token });
+      console.log("✅ saved:", res.data);
+      }
+      listenForMessages();
+    })();
+  }, []);
   useEffect(() => {
     const name = getUserName();
     const email = getUserEmail();
@@ -62,10 +73,9 @@ export default function AdminLayout() {
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-      isActive
-        ? "bg-white/10 text-white"
-        : "text-slate-300 hover:bg-white/5 hover:text-white"
+    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive
+      ? "bg-white/10 text-white"
+      : "text-slate-300 hover:bg-white/5 hover:text-white"
     }`;
 
   return (
@@ -85,11 +95,11 @@ export default function AdminLayout() {
             <img className="w-full" src={logo} alt="lmoch.com" />
             {sidebarOpen && (
               <div className="logo-text text-[#FF7A45]">
-                        <span className='text-white'>Lm</span>
-                        och<span className='text-white'>.com</span>
-                    </div>
+                <span className='text-white'>Lm</span>
+                och<span className='text-white'>.com</span>
+              </div>
             )}
-            
+
           </div>
         </div>
 
@@ -117,9 +127,8 @@ export default function AdminLayout() {
                 {({ isActive }) => (
                   <>
                     <Icon
-                      className={`w-5 h-5 flex-shrink-0 ${
-                        isActive ? "text-white" : "text-slate-400 group-hover:text-white"
-                      }`}
+                      className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"
+                        }`}
                     />
                     {sidebarOpen && <span className="truncate">{label}</span>}
                     {isActive && sidebarOpen && (
@@ -133,11 +142,11 @@ export default function AdminLayout() {
 
           {sidebarOpen && (
             <p className="px-3 mt-6 mb-2 text-[11px] font-semibold text-white/40 uppercase tracking-wider">
-              
+
             </p>
           )}
           {!sidebarOpen && <div className="my-4 border-t border-white/10" />}
-          
+
         </nav>
 
         {/* Logout */}
@@ -184,7 +193,7 @@ export default function AdminLayout() {
                   />
                 ) : (
                   <div
-                     style={{ backgroundColor: SIDEBAR_BG }}
+                    style={{ backgroundColor: SIDEBAR_BG }}
                     className="w-10 h-10  rounded-full flex items-center justify-center">
                     <span className="text-orange-600  font-semibold text-sm">{initials}</span>
                   </div>
@@ -201,7 +210,7 @@ export default function AdminLayout() {
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
-        
+
       </div>
     </div>
   );

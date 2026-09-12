@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lmoch</string>
+    <string name="title_activity_main">Lmoch</string>
+    <string name="package_name">com.lmoch</string>
+    <string name="custom_url_scheme">com.lmoch</string>
+</resources>

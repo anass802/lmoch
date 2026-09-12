@@ -6,6 +6,7 @@ import CartShoping from "../components/clients/CartShoping";
 import SearchBox from "../components/clients/Search";
 import { useCart } from "../context/CartContext";
 import SocialFloatingButton from "../components/clients/SocialFloatingButton";
+import { Capacitor } from '@capacitor/core';
 
 
 export default function ClientLayout() {
@@ -45,7 +46,8 @@ export default function ClientLayout() {
                 }} />
             <Outlet />
             <SocialFloatingButton />
-            <FooterClient />
+            {!Capacitor.isNativePlatform() && <FooterClient />}
+            
         </div>
     );
 }

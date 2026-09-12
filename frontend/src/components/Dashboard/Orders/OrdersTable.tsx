@@ -46,7 +46,9 @@ export default function OrdersTable({ orders, loading, onStatusChanged }: Props)
           <div className="w-8 h-8 border-4 border-orange-100 border-t-orange-500 rounded-full animate-spin" />
         </div>
       ) : (
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+
+          <table className="w-full min-w-[900px]  text-sm">
           <thead>
             <tr className="text-xs text-gray-400 uppercase tracking-wide bg-gray-50">
               <th className="px-6 py-3 text-left font-medium">ID</th>
@@ -78,7 +80,7 @@ export default function OrdersTable({ orders, loading, onStatusChanged }: Props)
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${avatarColor(order.user?.name)}`}>
                           {getInitials(order.user?.name)}
                         </div>
-                        <span className="font-medium text-gray-800">{order.user?.name ?? "Invité"}</span>
+                        <span className="font-medium text-gray-800">{order.user?.name ?? `Invité-${order.name?order.name:""}`}</span>
                       </div>
                     </td>
                     <td className="px-6 py-3.5 text-gray-600">{order.city}</td>
@@ -162,6 +164,9 @@ export default function OrdersTable({ orders, loading, onStatusChanged }: Props)
             )}
           </tbody>
         </table>
+        </div>
+
+        
       )}
 
       {lightbox && (

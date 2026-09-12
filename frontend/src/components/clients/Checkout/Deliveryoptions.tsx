@@ -24,7 +24,10 @@ export default function DeliveryOptions({ city,onShippingChange }: Props) {
     const requiredCount = city === "Casablanca" ? 4 : 6;
     const { items } = useCart()
     const eligibleCount = items
-        .filter((item) => FREE_CATEGORIES.includes(item.category))
+        .filter((item) => 
+            FREE_CATEGORIES.includes(item.category) &&
+            !item.is_promo
+    )
         .reduce((sum, item) => sum + item.quantity, 0);
     const remaining = Math.max(requiredCount - eligibleCount, 0);
     let colorClass = "text-red-500 bg-red-500/10";
@@ -45,7 +48,7 @@ export default function DeliveryOptions({ city,onShippingChange }: Props) {
     const message =
         eligibleCount >= requiredCount
             ? "🎉 Livraison gratuite activée !"
-            : `Ajoutez encore ${remaining} produit(s) des catégories éligibles pour bénéficier de la livraison gratuite.`;
+            : `Ajoutez encore ${remaining} produit(s) non promotionnel(s) parmi les catégories éligibles pour bénéficier de la livraison gratuite.`;
 
     const getShippingPrice = () => {
         if (!city) return 0;
@@ -176,6 +179,7 @@ export default function DeliveryOptions({ city,onShippingChange }: Props) {
 
             <div className="flex items-center justify-between gap-3 mt-6">
                 <button
+                    onClick={() => window.history.back()}
                     type="button"
                     className="flex items-center gap-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium text-sm px-4 py-2.5 transition-colors"
                 >

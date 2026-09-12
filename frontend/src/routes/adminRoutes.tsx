@@ -6,6 +6,7 @@ import ProductsPage from "../pages/ProductsPage";
 import OrdersDashboard from "../pages/OrdersDashboard";
 import CatListingsPage from "../pages/CatListingsPage";
 import Events from "../pages/Event";
+import ReservationsAdmin from "../pages/ReservationAdmin";
 export const adminRoutes: RouteObject[] = [
   {
     path: "/admin",
@@ -19,7 +20,8 @@ export const adminRoutes: RouteObject[] = [
       { path: "products", element: <ProductsPage /> },
       { path: "orders", element: <OrdersDashboard /> },
       {path:"cats",element:<CatListingsPage/>},
-      {path:'events',element:<Events/>}
+      {path:'events',element:<Events/>},
+      {path:'reservations',element:<ReservationsAdmin/>}
 
 
     ],

@@ -1,5 +1,7 @@
 import { Pencil, Trash2, Package } from "lucide-react";
 import type { Product } from "../../../types/Clients";
+import ImageLightbox from "../Orders/ImageLightbox";
+import { useState } from "react";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -18,6 +20,7 @@ type Props = {
 };
 
 export default function ProductsTable({ products, loading, onEdit, onDelete, deletingId }: Props) {
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
   return (
     <div className="bg-white rounded-2xl border border-orange-100 shadow-sm overflow-hidden">
       {loading ? (
@@ -55,6 +58,7 @@ export default function ProductsTable({ products, loading, onEdit, onDelete, del
                               src={getProductImageSrc(product.image, BASE_URL)}
                               alt={product.name}
                               className="w-full h-full object-cover"
+                              onClick={() => setLightbox({ src: getProductImageSrc(product.image, BASE_URL), alt: product.name })}
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
@@ -115,6 +119,9 @@ export default function ProductsTable({ products, loading, onEdit, onDelete, del
           </table>
         </div>
       )}
+      {lightbox && (
+              <ImageLightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
+            )}
     </div>
   );
 }

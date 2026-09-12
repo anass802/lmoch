@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MapPin, User, Phone, Building2, Home } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { MapPin, User, Phone, Building2, Home, ChevronDown } from "lucide-react";
 
 import type { InfoClientState } from "../../../types/Clients";
 import type { MoroccoCity } from "../../../data/moroccoCities";
@@ -16,15 +16,40 @@ interface CitiesProps {
         city: string;
         address: string;
     };
-
 }
 
 export default function Information({ cities, onCityChange, form, setForm, errors }: CitiesProps) {
-    //     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     setForm({ ...form, [e.target.name]: e.target.value });
-    //   };
-
     const [saveAddress, setSaveAddress] = useState(false);
+
+    // --- city combobox state ---
+    const [cityQuery, setCityQuery] = useState(form.city || "");
+    const [cityOpen, setCityOpen] = useState(false);
+    const cityBoxRef = useRef<HTMLDivElement>(null);
+
+    const filteredCities = cities.filter((c) =>
+        c.toLowerCase().includes(cityQuery.trim().toLowerCase())
+    );
+
+    const selectCity = (city: MoroccoCity | "") => {
+        setForm({ ...form, city });
+        onCityChange(city);
+        setCityQuery(city);
+        setCityOpen(false);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (cityBoxRef.current && !cityBoxRef.current.contains(e.target as Node)) {
+                setCityOpen(false);
+                // if user typed something that doesn't match a real city, revert to last valid value
+                if (!cities.includes(cityQuery as MoroccoCity)) {
+                    setCityQuery(form.city || "");
+                }
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [cityQuery, cities, form.city]);
 
     return (
         <div className="w-full p-6 border border-gray-100 rounded-2xl shadow-sm bg-white">
@@ -75,28 +100,49 @@ export default function Information({ cities, onCityChange, form, setForm, error
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                    {/* --- searchable city combobox --- */}
+                    <div ref={cityBoxRef} className="relative">
                         <label className="block text-sm text-gray-600 mb-1.5">Ville</label>
 
                         <div className="relative">
                             <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                            <select
-                                className={`w-full appearance-none rounded-lg border pl-10 pr-8 py-2.5 text-sm leading-tight
-            ${errors.city ? "border-red-500 focus:ring-red-400" : "border-gray-200 focus:ring-orange-400"}
-            text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent`}
-                                value={form.city}
+                            <input
+                                type="text"
+                                className={`w-full rounded-lg border pl-10 pr-8 py-2.5 text-sm
+                                ${errors.city ? "border-red-500 focus:ring-red-400" : "border-gray-200 focus:ring-orange-400"}
+                                text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent`}
+                                placeholder="Rechercher une ville..."
+                                value={cityQuery}
+                                onFocus={() => setCityOpen(true)}
                                 onChange={(e) => {
-                                    const value = e.target.value;
-                                    const city = value === "" ? "" : (value as MoroccoCity);
-                                    setForm({ ...form, city });
-                                    onCityChange(city);
+                                    setCityQuery(e.target.value);
+                                    setCityOpen(true);
+                                    if (e.target.value === "") selectCity("");
                                 }}
-                            >
-                                <option value="">Sélectionnez une ville</option>
-                                {cities.map((city) => (
-                                    <option key={city} value={city}>{city}</option>
-                                ))}
-                            </select>
+                            />
+                            <ChevronDown
+                                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"
+                            />
+
+                            {cityOpen && (
+                                <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                                    {filteredCities.length > 0 ? (
+                                        filteredCities.map((city) => (
+                                            <button
+                                                type="button"
+                                                key={city}
+                                                onClick={() => selectCity(city)}
+                                                className={`block w-full text-left px-4 py-2 text-sm hover:bg-orange-50
+                                                    ${form.city === city ? "bg-orange-50 text-orange-600 font-medium" : "text-gray-700"}`}
+                                            >
+                                                {city}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="px-4 py-2 text-sm text-gray-400">Aucune ville trouvée</div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         {errors.city && (
                             <p className="text-xs text-red-500 mt-1">{errors.city}</p>
@@ -115,7 +161,6 @@ export default function Information({ cities, onCityChange, form, setForm, error
                                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                                 type="text"
                             />
-
                         </div>
                         {errors.address && (
                             <p className="text-xs text-red-500 mt-1">{errors.address}</p>

@@ -86,6 +86,7 @@ export interface OrderDetail {
   city: string;
   address: string;
   embalage: string | null;
+  name:string;
   items: OrderItemDetail[];
   created_at: string;
   updated_at: string;
@@ -95,4 +96,40 @@ export interface OrdersMeta {
   current_page: number;
   last_page: number;
   total: number;
+}
+
+
+
+export type ReservationStatus = "pending" | "confirmed" | "cancelled" | "completed";
+
+export interface Reservation {
+  id: number;
+  nom_chat: string;
+  race: string;
+  age_mois: number;
+  telephone: string;
+  date_arrivee: string;   
+  date_sortie: string;    
+  notes: string | null;
+  status: ReservationStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// Laravel's paginate() shape, returned as response.data.data
+export interface ReservationsPaginated {
+  current_page: number;
+  data: Reservation[];
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+export interface GetReservationsParams {
+  search?: string;
+  status?: ReservationStatus | "";
+  sort?: "date_arrivee" | "date_sortie" | "created_at" | "nom_chat" | "age_mois";
+  dir?: "asc" | "desc";
+  per_page?: number;
+  page?: number;
 }

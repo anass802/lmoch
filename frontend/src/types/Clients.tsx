@@ -43,7 +43,6 @@ export interface Client {
 }
 type EmballageType = ''|'gratuit' | 'standard' | 'premium';
 export interface InfoClientState {
-    user_id: number;
     name?: string;
     phone: string;
     city: MoroccoCity | "";
@@ -75,4 +74,32 @@ export interface Category {
     id: number;
     name: string;
     slug: string;
+}
+
+export interface ReservationPayload {
+  nom_chat: string;
+  race: string;
+  age_mois: number;
+  telephone: string;
+  date_arrivee: string;   
+  date_sortie: string;    
+  notes?: string;
+}
+
+export interface ReservationRecord {
+  id: number;
+  nom_chat: string;
+  race: string;
+  age_mois: number;
+  telephone: string;
+  date_arrivee: string;
+  date_sortie: string;
+  notes: string | null;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReservationResponse {
+  data: ReservationRecord;
 }

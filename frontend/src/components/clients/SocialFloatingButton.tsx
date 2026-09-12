@@ -5,7 +5,7 @@ import logo from "../../assets/images/logo/lmoch.png";
 const SOCIALS = [
   {
     name: "WhatsApp",
-    href: "https://wa.me/212607334636",
+    href: "https://wa.me/212612911675",
     bg: "bg-[#25D366]",
     icon: (
       <svg viewBox="0 0 24 24" className="w-4 h-4 sm:w-5 sm:h-5 fill-white">

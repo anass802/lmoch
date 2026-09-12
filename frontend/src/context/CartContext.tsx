@@ -11,7 +11,8 @@ export interface CartVariant {
 export interface CartItem {
   id: number;              
   variantId: number | null; 
-  lineKey: string;          
+  lineKey: string;
+  is_promo:boolean;      
   name: string;
   price: number;
   category: string;
@@ -63,10 +64,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const variantId = variant?.id ?? null;
     const lineKey = makeLineKey(product.id, variantId);
 
-    setItems((prev) => {
-      const existing = prev.find((item) => item.lineKey === lineKey);
+    setItems((prev:any) => {
+      const existing = prev.find((item:any) => item.lineKey === lineKey);
       if (existing) {
-        return prev.map((item) =>
+        return prev.map((item:any) =>
           item.lineKey === lineKey ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
@@ -78,6 +79,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           lineKey,
           name: product.name,
           price: Number(product.price),
+          is_promo:Number(product.is_promo),
           category: product.category?.name ?? "",
           image: variant?.image_path ?? product.image ?? null,
           value: variant?.attributes.find((attr) => !attr.hex_code)?.value ?? null,

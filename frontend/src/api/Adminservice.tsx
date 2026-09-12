@@ -1,13 +1,17 @@
 import type {
-  RevenueByDay, StockSummary, LowStockProduct, DailyOrder, AttributeType, ProductVariant,OrderDetail,OrdersMeta,OrderStatus
-} from "../types/admin";
+  RevenueByDay, StockSummary, LowStockProduct, DailyOrder, AttributeType, ProductVariant,OrderDetail,OrdersMeta,OrderStatus,
+   GetReservationsParams,ReservationsPaginated,Reservation } from "../types/admin";
 import type { Product, Species, Category } from "../types/Clients";
 import api from "./api";
 
 // ---- Products ----
 export const getProducts = (page = 1) =>
-  api.get<{ data: Product[] }>(`/get-all-products?page=${page}`); 
+  api.get<{ data: Product[] }>(`/get-all-products?page=${page}`);
 
+export const outOfStockProducts =(page=1)=>
+  api.get<{ data: Product[] }>(`/products/out-of-stock?page=${page}`);
+export const lowStockProducts=(page=1)=>
+  api.get<{data:Product[]}>(`/products/low-stock?page=${page}`);
 export const deleteProduct = (id: number) =>
   api.delete<{message:string,success:boolean}>(`/products/${id}`);
 
@@ -90,3 +94,13 @@ export const deleteCatListing = (id: number) => api.delete(`/admin/cat-listings/
 export const getAdminEvents=()=>api.get('/admin/events');
 export const activateEvent=(id:number)=>api.post(`admin/events/${id}/activate`);
 export const deactivateAllEvents=()=>api.post('/admin/events/deactivate')
+
+
+
+export const getReservations = (params: GetReservationsParams = {}) =>
+  api.get<{ data: ReservationsPaginated }>(`/admin/reservations`, { params });
+ 
+
+ 
+export const deleteReservation = (id: number) =>
+  api.delete<{ message: string }>(`/admin/reservations/${id}`);

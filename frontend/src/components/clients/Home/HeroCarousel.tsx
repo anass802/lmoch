@@ -2,9 +2,12 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getActiveEvent } from "../../../api/ClientServices";
-import slide1 from '../../../assets/images/slides/7e102344-0006-4a8a-baaa-19a3b0ec2ae8.png'
-import slide2 from '../../../assets/images/slides/b868317b-ed1a-435b-ab37-dccb6a641894.png'
-import slide3 from '../../../assets/images/slides/9001d976-f355-42f8-a6ac-d99f4393dcbe.png'
+import slide1 from '../../../assets/images/slides/28584a91-e754-4dc8-b67c-5d62bb4012aa.png'
+import slide2 from '../../../assets/images/slides/63db903f-7dcd-4007-9dd3-fc14b6651633.png'
+import slide3 from '../../../assets/images/slides/85c93571-0793-462a-9bf0-99c6bf3bf42e.png'
+import slide4 from '../../../assets/images/slides/ChatGPT Image Sep 6, 2026, 05_25_51 PM.png'
+import slide5 from '../../../assets/images/slides/Unknown.jpg'
+import slide6 from '../../../assets/images/slides/aaf507dc-8530-4397-93f1-1d5c1cc69cf5.png'
 
 type Slide = { id: number; image: string };
 
@@ -12,6 +15,9 @@ const defaultSlides: Slide[] = [
   { id: 1, image: slide1 },
   { id: 2, image: slide2 },
   { id: 3, image: slide3 },
+  { id: 4, image: slide4 },
+  { id: 5, image: slide5 },
+  { id: 6, image: slide6 },
 ];
 
 const eventImageModules = import.meta.glob(
@@ -92,7 +98,7 @@ export default function HeroCarousel() {
     <section className="mt-4 sm:mt-6">
       <div className="max-w-[1280px] mx-auto px-3 sm:px-4">
         <div
-          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#173E7D] aspect-[16/9] sm:aspect-[21/9]"
+          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-black w-full aspect-[1916/821]"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

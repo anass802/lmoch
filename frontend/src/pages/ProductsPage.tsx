@@ -1,21 +1,35 @@
 import { useEffect, useState } from "react";
-import { getProducts, deleteProduct, getCategories, getUncategorizedProducts, getSpecies } from "../api/Adminservice";
+import { getProducts, deleteProduct, getCategories, getUncategorizedProducts, getSpecies, outOfStockProducts,lowStockProducts } from "../api/Adminservice";
 import type { Species } from "../types/admin";
 import ProductModal from "../components/Models/Product";
 import type { Product, Category } from "../types/Clients";
 import { Plus, Search } from "lucide-react";
 import ProductsTable from "../components/Dashboard/Products/ProductsTable";
+import ReptureStock from "../components/Dashboard/Products/ReptureStock";
+import LowStockTable from "../components/Dashboard/Products/LowStockProducts";
 import UncategorizedProductsPanel from "../components/Dashboard/Products/UncategorizedProductsPanel";
 
 export default function ProductsPage() {
 
     const [products, setProducts] = useState<Product[]>([]);
+    const [outOfStock, setOutOfStock] = useState<Product[]>([]);
+    const [lowStock, setLowStock] = useState<Product[]>([]);
+    const [paginationL, setPaginationL] = useState({
+        current_page: 1,
+        last_page: 1,
+        total: 0,
+    });
     const [paginationP, setPaginationP] = useState({
         current_page: 1,
         last_page: 1,
         total: 0,
     });
     const [paginationC, setPaginationC] = useState({
+        current_page: 1,
+        last_page: 1,
+        total: 0,
+    });
+    const [paginationO, setPaginationO] = useState({
         current_page: 1,
         last_page: 1,
         total: 0,
@@ -27,7 +41,7 @@ export default function ProductsPage() {
     const [search, setSearch] = useState("");
     const [modalProduct, setModalProduct] = useState<Product | null | undefined>(undefined);
     const [deleting, setDeleting] = useState<number | null>(null);
-    const [mode, setMode] = useState<"products" | "uncategorized">("products");
+    const [mode, setMode] = useState<"products" | "uncategorized" | "outOfStock"| "lowStock">("products");
     const loadProducts = async (page = 1) => {
         try {
             const res = await getProducts(page);
@@ -60,6 +74,34 @@ export default function ProductsPage() {
             console.error(err);
         }
     };
+    const loadOutOfStockProducts = async (page = 1) => {
+    try {
+        const res = await outOfStockProducts(page);
+        setOutOfStock(res.data.data.data ?? []); 
+        setPaginationO({
+            current_page: res.data.data.current_page,
+            last_page: res.data.data.last_page,
+            total: res.data.data.total,
+        });
+    } catch (err) {
+        console.error(err);
+        setOutOfStock([]); // reset instead of leaving stale/undefined
+    }
+    };
+    const loadLowStockProducts = async (page = 1) => {
+        try {
+            const res = await lowStockProducts(page);
+            setLowStock(res.data.data.data ?? []); 
+            setPaginationL({
+                current_page: res.data.data.current_page,
+                last_page: res.data.data.last_page,
+                total: res.data.data.total,
+            });
+        } catch (err) {
+            console.error(err);
+            setLowStock([]); 
+        }
+    };
     const load = async () => {
         try {
             const [catRes, specRes] = await Promise.all([
@@ -78,19 +120,21 @@ export default function ProductsPage() {
         load();
         loadProducts();
         loadUncategorized();
+        loadOutOfStockProducts();
+        loadLowStockProducts();
     }, []);
 
     const handleDelete = async (id: number) => {
         if (!confirm("Supprimer ce produit ?")) return;
         setDeleting(id);
         try {
-            const res=await deleteProduct(id);
-            if(res.data.success){
+            const res = await deleteProduct(id);
+            if (res.data.success) {
                 setProducts((prev) => prev.filter((p) => p.id !== id));
                 alert(res.data.message)
             }
-            
-            
+
+
         } catch (err) {
             console.error(err);
         } finally {
@@ -137,10 +181,23 @@ export default function ProductsPage() {
                 hover:bg-orange-600 cursor-pointer`}>
                     Uncategories
                 </span>
+                <span
+                    onClick={() => setMode('outOfStock')}
+                    className={`px-4 py-2.5 bg-gray-200/50 rounded-full font-semibold hover:text-white 
+                    ${mode === 'outOfStock' ? "bg-orange-600 text-white" : ""}
+                    hover:bg-orange-600 cursor-pointer`}>
+                    Rupture de stock
+                </span>
+                <span
+                    onClick={() => setMode('lowStock')}
+                    className={`px-4 py-2.5 bg-gray-200/50 rounded-full font-semibold hover:text-white 
+                    ${mode === 'lowStock' ? "bg-orange-600 text-white" : ""}
+                    hover:bg-orange-600 cursor-pointer`}>
+                    Faible stock
+                </span>
 
             </div>
-            {mode == 'products' ? (
-
+            {mode === 'products' && (
                 <>
                     <div className="relative max-w-sm">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
@@ -156,11 +213,10 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2 mt-4">
                         {Array.from({ length: paginationP.last_page }, (_, i) => {
                             const page = i + 1;
-
                             return (
                                 <button
                                     key={page}
-                                    onClick={() => {loadProducts(page)}}
+                                    onClick={() => loadProducts(page)}
                                     className={`px-3 py-1.5 rounded-lg text-sm ${page === paginationP.current_page
                                         ? "bg-orange-500 text-white"
                                         : "bg-gray-100 text-gray-600 hover:bg-orange-100"
@@ -172,7 +228,9 @@ export default function ProductsPage() {
                         })}
                     </div>
                 </>
-            ) : (
+            )}
+
+            {mode === 'uncategorized' && (
                 <>
                     <UncategorizedProductsPanel
                         products={uncategorized}
@@ -183,7 +241,6 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2 mt-4">
                         {Array.from({ length: paginationC.last_page }, (_, i) => {
                             const page = i + 1;
-
                             return (
                                 <button
                                     key={page}
@@ -199,15 +256,71 @@ export default function ProductsPage() {
                         })}
                     </div>
                 </>
+            )}
 
-
+            {mode === 'outOfStock' && (
+                <>
+                    <ReptureStock
+                        outOfStockProducts={outOfStock}
+                        loading={loading}
+                        onEdit={setModalProduct}
+                        onDelete={handleDelete}
+                        deletingId={deleting}
+                    />
+                    <div className="flex items-center gap-2 mt-4">
+                        {Array.from({ length: paginationO.last_page }, (_, i) => {
+                            const page = i + 1;
+                            return (
+                                <button
+                                    key={page}
+                                    onClick={() => loadOutOfStockProducts(page)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm ${page === paginationO.current_page
+                                        ? "bg-orange-500 text-white"
+                                        : "bg-gray-100 text-gray-600 hover:bg-orange-100"
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
+            
+            {mode === 'lowStock' && (
+                <>
+                    <LowStockTable
+                        lowStockProducts={lowStock}
+                        loading={loading}
+                        onEdit={setModalProduct}
+                        onDelete={handleDelete}
+                        deletingId={deleting}
+                    />
+                    <div className="flex items-center gap-2 mt-4">
+                        {Array.from({ length: paginationL.last_page }, (_, i) => {
+                            const page = i + 1;
+                            return (
+                                <button
+                                    key={page}
+                                    onClick={() => loadLowStockProducts(page)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm ${page === paginationL.current_page
+                                        ? "bg-orange-500 text-white"
+                                        : "bg-gray-100 text-gray-600 hover:bg-orange-100"
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </>
             )}
 
 
 
             {modalProduct !== undefined && (
-        <ProductModal product={modalProduct} categories={categories} onClose={() => setModalProduct(undefined)} onSaved={load} />
-      )}
+                <ProductModal product={modalProduct} categories={categories} onClose={() => setModalProduct(undefined)} onSaved={load} />
+            )}
         </div>
     );
 }

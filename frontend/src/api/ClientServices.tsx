@@ -1,5 +1,6 @@
 import api from "./api";
-import type { Product,Species,Categories,InfoCheckout,CheckoutResponse } from "../types/Clients";
+import type { Product,Species,Categories,InfoCheckout,CheckoutResponse,ReservationPayload, ReservationResponse } from "../types/Clients";
+import type { CatListing } from "../types/Cats";
 
 interface FilterParams {
   category_id: number;
@@ -38,8 +39,17 @@ export const getSuggestionProducts=({product_id,species_id,category_id}:Suggesti
   api.get<{data:Product[]}>(
     `suggestion-products/${product_id}/${species_id}/${category_id}`
   )
-
+// ----View Animal Details Page----- //
+export const getAnimal=(id:number)=>api.get<{data:CatListing}>(`get-animal-details/${id}`)
 // -----Checkout------ //
 
 export const checkout = (data: InfoCheckout) =>
   api.post<CheckoutResponse>("/checkout", data);
+
+
+export const createReservation = (data: ReservationPayload) =>
+  api.post<ReservationResponse>("/reservations", data);
+
+//--- NewsletterSubscriber ---//
+export const NewsletterSubscriber=(email:string)=>
+  api.post<{message:string}>('create-subscriber',{email})
