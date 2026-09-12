@@ -30,6 +30,7 @@ class ShippingService
             $product = $products[$item['id']] ?? null;
 
             if (!$product || !$product->category) return 0;
+            if($product->is_promo) return 0;
 
             return in_array($product->category->name, self::FREE_CATEGORIES)
                 ? $item['quantity']

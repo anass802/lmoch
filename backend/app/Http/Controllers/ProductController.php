@@ -7,7 +7,6 @@ use App\Models\Species;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-
 class ProductController extends Controller
 {
     // methods for Home pages //
@@ -43,6 +42,14 @@ class ProductController extends Controller
         ->paginate(50);
         
         return response()->json(['data'=>$product]);
+    }
+    public function outOfStockProducts()
+    {
+        $products = Product::with('category')
+            ->where('stock', 0)
+            ->paginate(50);
+
+        return response()->json(['data' => $products]);
     }
     public function search(Request $requet){
         $query=$requet->input('q');

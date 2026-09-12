@@ -57,4 +57,49 @@ class AuthController extends Controller
         ]);
 
     }
+    public function updateUser(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|in:name,email,phone',
+            'value' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        $field = $request->field;
+        $value = $request->value;
+
+        // extra validation per field
+        if ($field === 'email') {
+            $request->validate([
+                'value' => 'required|email|unique:users,email,' . $user->id,
+            ]);
+        }
+
+        if ($field === 'phone') {
+            $request->validate([
+                'value' => 'required|string|unique:users,phone,' . $user->id,
+            ]);
+        }
+
+        $user->update([$field => $value]);
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'field' => $field,
+        ]);
+    }
+    public function deleteAccount(Request $request)
+{
+    $user = $request->user();
+
+    // revoke all tokens first so the deleted account can't keep making requests
+    $user->tokens()->delete();
+
+    $user->delete();
+
+    return response()->json([
+        'message' => 'Account deleted successfully',
+    ]);
+}
 }

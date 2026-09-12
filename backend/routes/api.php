@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\CatsListingController;
 use App\Http\Controllers\CatListingController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\ReservationController;
 
 
 Route::get('chat-jouets',[ProductController::class,'JouetChat']);
@@ -20,6 +21,7 @@ Route::get('get-species',[ProductController::class,'species']);
 Route::get('/species/{slug}/categories', [ProductController::class, 'categories']);
 Route::get('get-filtred-product/{category_id}/{species_id}',[ProductController::class,'getFilteredProducts']);
 Route::get('get-product-details/{slug}',[ProductController::class,'getProductDetails']);
+Route::get('get-animal-details/{catListing}',[CatListingController::class,'show']);
 Route::get('suggestion-products/{product_id}/{species_id}/{category_id}',[ProductController::class,'getSuggestionProduct']);
 Route::post('/checkout', [OrderController::class, 'store']);
 Route::get('/active-event', [EventController::class, 'active']);
@@ -29,7 +31,8 @@ Route::get('/promo-products', [ProductController::class, 'getPromoProducts']);
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
- 
+    Route::post('update-user', [UserController::class, 'updateUser']);
+    Route::delete('/delete-account', [AuthController::class, 'deleteAccount']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', function (\Illuminate\Http\Request $request) {
@@ -54,8 +57,10 @@ Route::post('products', [ProductController::class, 'store']);
 Route::put('products/{product}', [ProductController::class, 'update']);
 Route::delete('products/{product}', [ProductController::class, 'delete']);
 Route::get('get-all-products',[ProductController::class,'getAllProducts']);
+Route::get('/products/out-of-stock', [ProductController::class, 'outOfStockProducts']);
 Route::apiResource('admin/cat-listings', CatsListingController::class);
 
+Route::post('/reservations', [ReservationController::class, 'store']);
 
 
 Route::get('categories/{category}/attribute-types', [CategoryController::class, 'attributeTypes']);
@@ -73,3 +78,8 @@ Route::get('/cat-listings/{catListing}', [CatListingController::class, 'show']);
 Route::get('/admin/events', [EventController::class, 'index']);
 Route::post('/admin/events/{event}/activate', [EventController::class, 'activate']);
 Route::post('/admin/events/deactivate', [EventController::class, 'deactivateAll']);
+
+Route::get('/admin/reservations', [ReservationController::class, 'index']);
+Route::patch('/admin/reservations/{id}/status', [ReservationController::class, 'updateStatus']);
+Route::delete('/admin/reservations/{id}', [ReservationController::class, 'destroy']);
+
