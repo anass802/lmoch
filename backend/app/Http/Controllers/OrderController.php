@@ -11,6 +11,7 @@ use App\Services\ShippingService;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Services\PointsService;
+use App\Services\FcmService;
 
 class OrderController extends Controller
 {
@@ -151,6 +152,13 @@ public function index(Request $request)
                 'shipping'=>$shipping['price'],
                 'points_used' => $pointsUsed
             ]);
+
+            FcmService::sendNotification(
+                'Nouvelle Commande',
+                'Une nouvelle commande a été passée.',
+                null,
+                ['order_id' => $order->id]
+            );
 
             return response()->json([
                 'order' => $order->load('items'),

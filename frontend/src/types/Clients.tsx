@@ -82,7 +82,8 @@ export interface ReservationPayload {
   age_mois: number;
   telephone: string;
   date_arrivee: string;   
-  date_sortie: string;    
+  date_sortie: string; 
+  sterilise:boolean,   
   notes?: string;
 }
 

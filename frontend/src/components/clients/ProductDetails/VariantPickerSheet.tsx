@@ -46,11 +46,31 @@ export default function VariantPickerSheet({ product, onClose, onConfirm }: Vari
     }, [types, variants]);
 
     const colorGroup = groupedByType.find((g) => g.type.slug === "color");
-    const otherGroups = groupedByType.filter((g) => g.type.slug !== "color");
     const colorValueIds = useMemo(
         () => new Set(colorGroup?.values.map((v) => v.id) ?? []),
         [colorGroup]
     );
+
+    // Sizes/weights available for the CURRENTLY SELECTED color only.
+    // If no color is selected yet (or there's no color attribute at all),
+    // fall back to the full set derived from all variants.
+    const otherGroups = useMemo(() => {
+        const base = groupedByType.filter((g) => g.type.slug !== "color");
+
+        if (!colorGroup) return base;
+
+        const selectedColorId = selected[colorGroup.type.id];
+        if (selectedColorId == null) return base;
+
+        const variantsForColor = variants.filter((v) =>
+            v.attribute_values.some((av) => av.id === selectedColorId)
+        );
+        const usedValueIds = new Set(variantsForColor.flatMap((v) => v.attribute_values.map((av) => av.id)));
+
+        return base
+            .map((g) => ({ ...g, values: g.values.filter((v) => usedValueIds.has(v.id)) }))
+            .filter((g) => g.values.length > 0);
+    }, [groupedByType, colorGroup, selected, variants]);
 
     // One thumbnail per distinct color, deduped by color value id
     const colorSwatches = useMemo(() => {
@@ -93,7 +113,28 @@ export default function VariantPickerSheet({ product, onClose, onConfirm }: Vari
         ?? product.image;
 
     const selectValue = (typeId: number, valueId: number) => {
-        setSelected((prev) => ({ ...prev, [typeId]: valueId }));
+        setSelected((prev) => {
+            const next = { ...prev, [typeId]: valueId };
+
+            // Changing the color invalidates any previously chosen size/weight that
+            // doesn't exist for the new color — clear those so the UI/validation stay consistent.
+            if (colorGroup && typeId === colorGroup.type.id) {
+                const variantsForColor = variants.filter((v) =>
+                    v.attribute_values.some((av) => av.id === valueId)
+                );
+                const usedValueIds = new Set(variantsForColor.flatMap((v) => v.attribute_values.map((av) => av.id)));
+
+                groupedByType.forEach((g) => {
+                    if (g.type.slug === "color") return;
+                    const current = next[g.type.id];
+                    if (current != null && !usedValueIds.has(current)) {
+                        delete next[g.type.id];
+                    }
+                });
+            }
+
+            return next;
+        });
     };
 
     const handleConfirm = () => {

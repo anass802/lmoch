@@ -168,4 +168,11 @@ class ProductController extends Controller
         'message' => 'Product deleted successfully'
     ]);
     }
+    public function sync(Request $request)
+    {
+        $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+
+        return Product::whereIn('id', $request->ids)
+            ->get(['id', 'name', 'price', 'is_promo', 'stock']);
+    }
 }

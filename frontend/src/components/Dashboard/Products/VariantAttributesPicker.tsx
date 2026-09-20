@@ -28,6 +28,9 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
     const [selected, setSelected] = useState<Record<number, Set<number>>>({});
     const [loading, setLoading] = useState(false);
 
+    // per-color (or NO_COLOR_KEY) selections for non-color attribute types (size, weight, ...)
+    const [otherSelected, setOtherSelected] = useState<Record<string, Record<number, Set<number>>>>({});
+
     // image stored per color value id (or NO_COLOR_KEY when the category has no color type)
     const [images, setImages] = useState<Record<string, { file: File | null; preview: string | null; existingPath: string | null }>>({});
     // stock stored per full combination key (sorted attribute value ids joined with "-")
@@ -50,7 +53,8 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
       if (!productId || types.length === 0) return;
       getProductVariants(productId)
         .then((res) => {
-          const nextSelected: Record<number, Set<number>> = {};
+          const nextColorSelected = new Set<number>();
+          const nextOtherSelected: typeof otherSelected = {};
           const nextStocks: Record<string, string> = {};
           const nextImages: typeof images = {};
 
@@ -61,10 +65,23 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
             variant.attribute_values.forEach((v) => {
               types.forEach((t) => {
                 if (t.values.some((tv) => tv.id === v.id)) {
-                  nextSelected[t.id] = nextSelected[t.id] ?? new Set();
-                  nextSelected[t.id].add(v.id);
                   valueIds.push(v.id);
-                  if (t.slug === "color") colorValueId = v.id;
+                  if (t.slug === "color") {
+                    colorValueId = v.id;
+                    nextColorSelected.add(v.id);
+                  }
+                }
+              });
+            });
+
+            const groupKey = colorValueId != null ? String(colorValueId) : NO_COLOR_KEY;
+
+            variant.attribute_values.forEach((v) => {
+              types.forEach((t) => {
+                if (t.slug !== "color" && t.values.some((tv) => tv.id === v.id)) {
+                  nextOtherSelected[groupKey] = nextOtherSelected[groupKey] ?? {};
+                  nextOtherSelected[groupKey][t.id] = nextOtherSelected[groupKey][t.id] ?? new Set();
+                  nextOtherSelected[groupKey][t.id].add(v.id);
                 }
               });
             });
@@ -72,9 +89,8 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
             const comboKey = [...valueIds].sort((a, b) => a - b).join("-");
             nextStocks[comboKey] = String(variant.stock ?? 0);
 
-            const imageKey = colorValueId != null ? String(colorValueId) : NO_COLOR_KEY;
-            if (variant.image_path && !nextImages[imageKey]) {
-              nextImages[imageKey] = {
+            if (variant.image_path && !nextImages[groupKey]) {
+              nextImages[groupKey] = {
                 file: null,
                 preview: `${BASE_URL}/storage/${variant.image_path}`,
                 existingPath: variant.image_path,
@@ -82,12 +98,15 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
             }
           });
 
-          setSelected(nextSelected);
+          if (colorType) {
+            setSelected((prev) => ({ ...prev, [colorType.id]: nextColorSelected }));
+          }
+          setOtherSelected((prev) => ({ ...prev, ...nextOtherSelected }));
           setStocks((prev) => ({ ...prev, ...nextStocks }));
           setImages((prev) => ({ ...prev, ...nextImages }));
         })
         .catch((err) => console.error(err));
-    }, [productId, types.length]);
+    }, [productId, types.length, colorType]);
 
     const toggleValue = (typeId: number, valueId: number) => {
       setSelected((prev) => {
@@ -99,34 +118,53 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
       });
     };
 
+    const toggleOtherValue = (groupKey: string, typeId: number, valueId: number) => {
+      setOtherSelected((prev) => {
+        const groupSel = { ...(prev[groupKey] ?? {}) };
+        const set = new Set(groupSel[typeId] ?? []);
+        set.has(valueId) ? set.delete(valueId) : set.add(valueId);
+        groupSel[typeId] = set;
+        return { ...prev, [groupKey]: groupSel };
+      });
+    };
+
     // Groups: one entry per selected color (or a single "no color" group), each holding
-    // the full combinations (color + other attrs) that belong to it.
+    // the full combinations (color + other attrs) that belong to it. Other-attribute
+    // selections are scoped PER color group, so each color can have its own sizes/weights.
     const colorGroups = useMemo(() => {
-      const otherGroups = otherTypes
-        .map((t) => Array.from(selected[t.id] ?? []))
-        .filter((a) => a.length > 0);
-
-      const otherCombos: number[][] = otherGroups.length === 0
-        ? [[]]
-        : otherGroups.reduce<number[][]>(
-            (acc, group) => acc.flatMap((combo) => group.map((v) => [...combo, v])),
-            [[]]
-          );
-
       const colorValueIds = colorType ? Array.from(selected[colorType.id] ?? []) : [];
 
+      const buildCombosForGroup = (groupKey: string) => {
+        const groupSel = otherSelected[groupKey] ?? {};
+        const otherGroups = otherTypes
+          .map((t) => Array.from(groupSel[t.id] ?? []))
+          .filter((a) => a.length > 0);
+
+        return otherGroups.length === 0
+          ? [[]]
+          : otherGroups.reduce<number[][]>(
+              (acc, group) => acc.flatMap((combo) => group.map((v) => [...combo, v])),
+              [[]]
+            );
+      };
+
       if (colorType && colorValueIds.length > 0) {
-        return colorValueIds.map((colorId) => ({
-          key: String(colorId),
-          colorId,
-          combinations: otherCombos.map((c) => [colorId, ...c].sort((a, b) => a - b)),
-        }));
+        return colorValueIds.map((colorId) => {
+          const groupKey = String(colorId);
+          const otherCombos = buildCombosForGroup(groupKey);
+          return {
+            key: groupKey,
+            colorId,
+            combinations: otherCombos.map((c) => [colorId, ...c].sort((a, b) => a - b)),
+          };
+        });
       }
 
       // no color type in this category, or none selected yet: one flat group
+      const otherCombos = buildCombosForGroup(NO_COLOR_KEY);
       if (otherCombos.length === 1 && otherCombos[0].length === 0) return [];
       return [{ key: NO_COLOR_KEY, colorId: null, combinations: otherCombos.map((c) => [...c].sort((a, b) => a - b)) }];
-    }, [colorType, otherTypes, selected]);
+    }, [colorType, otherTypes, selected, otherSelected]);
 
     const setImageForGroup = (groupKey: string, file: File | null) => {
       setImages((prev) => {
@@ -181,20 +219,21 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
 
     return (
       <div className="space-y-4 border border-orange-100 rounded-2xl p-4 bg-orange-50/30">
-        {types.map((type) => {
-          const Icon = TYPE_ICONS[type.slug] ?? Palette;
+        {/* Only the color type is picked globally here. Size/weight are picked per-color below. */}
+        {colorType && (() => {
+          const Icon = TYPE_ICONS[colorType.slug] ?? Palette;
           return (
-            <div key={type.id}>
+            <div>
               <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-2">
-                <Icon className="w-3.5 h-3.5 text-orange-600" /> {type.name}
+                <Icon className="w-3.5 h-3.5 text-orange-600" /> {colorType.name}
               </p>
               <div className="flex flex-wrap gap-2">
-                {type.values.map((value) => {
-                  const isSelected = selected[type.id]?.has(value.id) ?? false;
+                {colorType.values.map((value) => {
+                  const isSelected = selected[colorType.id]?.has(value.id) ?? false;
                   return (
                     <button
                       key={value.id} type="button"
-                      onClick={() => toggleValue(type.id, value.id)}
+                      onClick={() => toggleValue(colorType.id, value.id)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                         isSelected ? "bg-orange-600 border-orange-600 text-white" : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
                       }`}
@@ -207,12 +246,41 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
               </div>
             </div>
           );
+        })()}
+
+        {/* If the category has no color type at all, size/weight are picked once at the top level (NO_COLOR_KEY group). */}
+        {!colorType && otherTypes.map((type) => {
+          const Icon = TYPE_ICONS[type.slug] ?? Ruler;
+          const groupSel = otherSelected[NO_COLOR_KEY]?.[type.id] ?? new Set<number>();
+          return (
+            <div key={type.id}>
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-2">
+                <Icon className="w-3.5 h-3.5 text-orange-600" /> {type.name}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {type.values.map((value) => {
+                  const isSelected = groupSel.has(value.id);
+                  return (
+                    <button
+                      key={value.id} type="button"
+                      onClick={() => toggleOtherValue(NO_COLOR_KEY, type.id, value.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        isSelected ? "bg-orange-600 border-orange-600 text-white" : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                      }`}
+                    >
+                      {value.value}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
         })}
 
         {colorGroups.length > 0 && (
           <div className="space-y-4 pt-3 border-t border-orange-100">
             <p className="text-xs font-semibold text-gray-600">
-              {totalCombos} combinaison{totalCombos > 1 ? "s" : ""} — image par couleur, stock par taille
+              {totalCombos} combinaison{totalCombos > 1 ? "s" : ""} — image et {colorType ? "tailles" : "attributs"} par couleur, stock par combinaison
             </p>
             {colorGroups.map((group) => {
               const colorValue = group.colorId != null ? valueById(group.colorId) : null;
@@ -245,6 +313,40 @@ const VariantAttributesPicker = forwardRef<VariantPickerHandle, Props>(
                       <span className="text-sm font-semibold text-gray-700">Toutes les variantes</span>
                     )}
                   </div>
+
+                  {/* Per-color size/weight picker — only shown when there IS a color type,
+                      since without one the picker is already rendered at the top level. */}
+                  {colorType && otherTypes.length > 0 && (
+                    <div className="space-y-2 pl-2">
+                      {otherTypes.map((type) => {
+                        const Icon = TYPE_ICONS[type.slug] ?? Ruler;
+                        const groupSel = otherSelected[group.key]?.[type.id] ?? new Set<number>();
+                        return (
+                          <div key={type.id}>
+                            <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
+                              <Icon className="w-3 h-3 text-orange-600" /> {type.name}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {type.values.map((value) => {
+                                const isSelected = groupSel.has(value.id);
+                                return (
+                                  <button
+                                    key={value.id} type="button"
+                                    onClick={() => toggleOtherValue(group.key, type.id, value.id)}
+                                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                                      isSelected ? "bg-orange-600 border-orange-600 text-white" : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                                    }`}
+                                  >
+                                    {value.value}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <div className="space-y-2 pl-2">
                     {group.combinations.map((ids) => {

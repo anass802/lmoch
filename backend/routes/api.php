@@ -12,6 +12,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ReservationController;
 
 
+
 Route::get('chat-jouets',[ProductController::class,'JouetChat']);
 Route::get('chien-jouets',[ProductController::class,'JouetDog']);
 ROUTE::get('random-products',[ProductController::class,'randomProducts']);
@@ -26,7 +27,12 @@ Route::get('suggestion-products/{product_id}/{species_id}/{category_id}',[Produc
 Route::post('/checkout', [OrderController::class, 'store']);
 Route::get('/active-event', [EventController::class, 'active']);
 Route::get('/promo-products', [ProductController::class, 'getPromoProducts']);
+Route::post('/cart/sync', function (Request $request) {
+    $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
 
+    return Product::whereIn('id', $request->ids)
+        ->get(['id', 'name', 'price', 'is_promo', 'stock']);
+});
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);

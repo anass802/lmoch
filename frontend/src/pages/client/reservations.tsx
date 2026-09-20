@@ -9,6 +9,7 @@ type FormState = {
   phone: string;
   arrival_date: string;
   departure_date: string;
+  sterilise: boolean | null,
   notes: string;
 };
 
@@ -19,6 +20,7 @@ const emptyForm: FormState = {
   phone: "",
   arrival_date: "",
   departure_date: "",
+  sterilise: null,
   notes: "",
 };
 
@@ -43,6 +45,9 @@ export default function ReservationPage() {
     if (errors[field]) {
       setErrors((er) => ({ ...er, [field]: undefined }));
     }
+  };
+  const updateSterilise = (value: boolean) => () => {
+    setForm((f) => ({ ...f, sterilise: value }));
   };
 
   const validate = (): boolean => {
@@ -87,6 +92,10 @@ export default function ReservationPage() {
       next.departure_date =
         "La date de départ doit être après l'arrivée.";
     }
+    if (form.sterilise === null) {
+      next.sterilise = "Veuillez indiquer si le chat est stérilisé.";
+    }
+
 
     setErrors(next);
 
@@ -107,6 +116,7 @@ export default function ReservationPage() {
       telephone: form.phone.trim(),
       date_arrivee: form.arrival_date,
       date_sortie: form.departure_date,
+      sterilise: form.sterilise as boolean,
     };
 
     setSubmitting(true);
@@ -218,11 +228,10 @@ export default function ReservationPage() {
                 onChange={update("cat_name")}
                 placeholder="Minette"
                 aria-invalid={!!errors.cat_name}
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
-                  errors.cat_name
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${errors.cat_name
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                  : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
+                  }`}
               />
 
               {errors.cat_name && (
@@ -244,11 +253,10 @@ export default function ReservationPage() {
                 onChange={update("breed")}
                 placeholder="Européen, Maine Coon…"
                 aria-invalid={!!errors.breed}
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
-                  errors.breed
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${errors.breed
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                  : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
+                  }`}
               />
 
               {errors.breed && (
@@ -272,11 +280,10 @@ export default function ReservationPage() {
                 onChange={update("age_months")}
                 placeholder="24"
                 aria-invalid={!!errors.age_months}
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
-                  errors.age_months
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${errors.age_months
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                  : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
+                  }`}
               />
 
               {errors.age_months && (
@@ -298,11 +305,10 @@ export default function ReservationPage() {
                 onChange={update("phone")}
                 placeholder="06 12 34 56 78"
                 aria-invalid={!!errors.phone}
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
-                  errors.phone
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${errors.phone
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                  : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
+                  }`}
               />
 
               {errors.phone && (
@@ -324,11 +330,10 @@ export default function ReservationPage() {
                 value={form.arrival_date}
                 onChange={update("arrival_date")}
                 aria-invalid={!!errors.arrival_date}
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                  errors.arrival_date
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:ring-2 ${errors.arrival_date
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                  : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
+                  }`}
               />
 
               {errors.arrival_date && (
@@ -350,11 +355,10 @@ export default function ReservationPage() {
                 value={form.departure_date}
                 onChange={update("departure_date")}
                 aria-invalid={!!errors.departure_date}
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                  errors.departure_date
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:ring-2 ${errors.departure_date
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                  : "border-slate-300 focus:border-slate-500 focus:ring-slate-100"
+                  }`}
               />
 
               {errors.departure_date && (
@@ -363,6 +367,37 @@ export default function ReservationPage() {
                 </em>
               )}
             </label>
+            <div className="flex flex-col">
+              <span className="mb-2 text-sm font-semibold text-slate-700">
+                Stérilisé
+              </span>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="radio"
+                    name="sterilise"
+                    checked={form.sterilise === true}
+                    onChange={updateSterilise(true)}
+                  />
+                  Oui
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="radio"
+                    name="sterilise"
+                    checked={form.sterilise === false}
+                    onChange={updateSterilise(false)}
+                  />
+                  Non
+                </label>
+
+              </div>
+            </div>
+            {errors.sterilise && (
+              <em className="mt-1.5 text-xs not-italic text-red-600">
+                {errors.sterilise}
+              </em>
+            )}
           </div>
 
           {/* Server error */}

@@ -16,6 +16,8 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
+import { FirebaseMessaging } from "@capacitor-firebase/messaging";
+import { Capacitor } from '@capacitor/core';
 
 
 interface UserData {
@@ -39,19 +41,52 @@ const menuItems = [
 
 
 export default function AdminLayout() {
-  
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const [user, setUser] = useState<UserData | null>(null);
+  async function setupPushNotifications() {
+  if (!Capacitor.isNativePlatform()) return;
+
+  const perm = await FirebaseMessaging.requestPermissions();
+  if (perm.receive !== "granted") return;
+
+  try {
+    const { token } = await FirebaseMessaging.getToken();
+    console.log("FCM token:", token);
+    const res = await api.post("/save-fcm-token", {
+      token,
+      platform: Capacitor.getPlatform(),
+    });
+    console.log("save-fcm-token:", res.status, res.data);
+  } catch (e) {
+    console.error("getToken/save failed", e);
+  }
+
+  await FirebaseMessaging.removeAllListeners();
+  await FirebaseMessaging.addListener("tokenReceived", ({ token }) => {
+    api.post("/save-fcm-token", { token, platform: Capacitor.getPlatform() }).catch(console.error);
+  });
+  await FirebaseMessaging.addListener("notificationReceived", (e) =>
+    console.log("Push (foreground):", JSON.stringify(e.notification))
+  );
+  await FirebaseMessaging.addListener("notificationActionPerformed", (e) =>
+    console.log("Push tapped:", JSON.stringify(e.notification))
+  );
+}
   useEffect(() => {
     (async () => {
-      const token = await requestFcmToken();
-      console.log("🔥 FCM TOKEN:", token);
-      if (token) {
-        const res = await api.post(`/save-fcm-token`, { token });
-      console.log("✅ saved:", res.data);
+      if (Capacitor.isNativePlatform()) {
+        await setupPushNotifications();
+      } else {
+        const token = await requestFcmToken();
+        console.log("🔥 FCM TOKEN:", token);
+        if (token) {
+          const res = await api.post(`/save-fcm-token`, { token });
+          console.log("✅ saved:", res.data);
+        }
+        listenForMessages();
       }
-      listenForMessages();
     })();
   }, []);
   useEffect(() => {
@@ -84,10 +119,10 @@ export default function AdminLayout() {
       <aside
         style={{ backgroundColor: SIDEBAR_BG }}
         className={`
-          relative flex flex-col shadow-sm
-          transition-all duration-300 ease-in-out z-20 rounded-tr-2xl rounded-br-2xl
-          ${sidebarOpen ? "w-60" : "w-18"}
-        `}
+            relative flex flex-col shadow-sm
+            transition-all duration-300 ease-in-out z-20 rounded-tr-2xl rounded-br-2xl
+            ${sidebarOpen ? "w-60" : "w-18"}
+          `}
       >
         {/* Logo */}
         <div className="flex items-center justify-start gap-3 px-4 py-5 border-b border-white/10">

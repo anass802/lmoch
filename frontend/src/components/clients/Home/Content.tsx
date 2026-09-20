@@ -19,7 +19,7 @@ import { normalizeVariantForCart } from '../../../utils/normalizeVariant'
 const categories = [
     { img: `${Jouets}`, label: 'Jouets',path:'/categories/chat/2/jouets-chien-chat' },
     { img: `${Hygiene}`, label: 'Hygiene', path:'/categories/chat/2/hygiene-bain-chien-chat' },
-    { img: `${Litiers}`, label: 'Litiers',path:'/categories/chat/2/litiere-bac-a-litiere-chat' },
+    { img: `${Litiers}`, label: 'Litière',path:'/categories/chat/2/litiere-bac-a-litiere-chat' },
     { img: `${Vetements}`, label: 'Vetements',path:'/categories/chat/2/vetements-chien-chat'},
     { img: `${Couchage}`, label: 'Transport', path:'/categories/chat/2/sac-a-dos-cage-chien-chat' },
     { img: `${Transport}`, label: 'Couchage', path:'/categories/chat/2/coussin-niches-chien-chat' },

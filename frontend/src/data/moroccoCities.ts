@@ -73,6 +73,7 @@ export const MOROCCO_CITIES: string[] = [
   "Bouarfa",
   "Missour",
   "Khénifra",
+  "Saidia",
   "Demnate",
   "Azilal",
   "Ajdir taza",

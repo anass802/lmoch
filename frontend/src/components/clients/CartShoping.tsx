@@ -15,7 +15,9 @@ export default function CartShoping({ onClose }: PropsCartShoping) {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       {/* header */}
       <div className="border-b border-gray-100 shrink-0">
         <div className="flex justify-between items-center px-4 sm:px-5 py-4">

@@ -79,7 +79,7 @@ export default function LoginForm() {
                                 onChange={handleChange}
                                 placeholder="exemple@email.com"
                                 required
-                                className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                                className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -100,7 +100,7 @@ export default function LoginForm() {
                                 onChange={handleChange}
                                 placeholder="••••••••"
                                 required
-                                className="w-full rounded-lg border border-gray-300 pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                                className="w-full rounded-lg border border-gray-300 pl-10 pr-10 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                             />
                             <button
                                 type="button"

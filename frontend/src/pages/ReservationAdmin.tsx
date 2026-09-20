@@ -163,6 +163,9 @@ export default function ReservationsAdmin() {
                   </th>
                 ))}
 
+                 <th className="whitespace-nowrap px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#4a5b6d]">
+                  Stérilisé
+                </th>
                 <th className="whitespace-nowrap px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#4a5b6d]">
                   Téléphone
                 </th>
@@ -234,6 +237,9 @@ export default function ReservationsAdmin() {
 
                     <td className="whitespace-nowrap px-5 py-4 text-sm text-[#1f2d3d]">
                       {r.age_mois} mois
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-sm text-[#1f2d3d]">
+                      {r.sterilise?"sterilise":"non sterilise"} 
                     </td>
 
                     <td className="whitespace-nowrap px-5 py-4 text-sm text-[#1f2d3d]">

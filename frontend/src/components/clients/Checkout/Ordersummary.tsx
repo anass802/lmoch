@@ -87,7 +87,12 @@ export default function OrderSummary({ shipping, form, setForm, onSubmit, emball
                                     {item.quantity}
                                 </span>
                                 <button
-                                    onClick={() => updateQuantity(item.lineKey, item.quantity + 1)}
+                                    onClick={() => {
+                                        const max = item.stock ?? item.quantity;
+                                        if (item.quantity >= max) return;
+                                        updateQuantity(item.lineKey, item.quantity + 1);
+                                    }}
+                                    disabled={item.quantity >= (item.stock ?? item.quantity)}
                                     className="px-2 py-1 text-xs text-orange-500 hover:bg-orange-50 transition">
                                     +
                                 </button>

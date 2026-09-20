@@ -107,6 +107,7 @@ export interface Reservation {
   nom_chat: string;
   race: string;
   age_mois: number;
+  sterilise:boolean,
   telephone: string;
   date_arrivee: string;   
   date_sortie: string;    

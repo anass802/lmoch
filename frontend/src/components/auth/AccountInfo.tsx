@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import {
   User,
   Mail,
@@ -22,7 +22,9 @@ import {
   updateUser,
   updateUserInfo,
   deleteAccount,
+  updatePointsBalance
 } from '../../api/auth/AuthService'
+import api from "../../api/api";
 
 type FieldKey = "name" | "email" | "phone";
 
@@ -40,8 +42,26 @@ export default function AccountInfo() {
   const name = getUserName() ?? "—";
   const email = getUserEmail() ?? "—";
   const phone = getPhone() ?? "—";
-  const points = getpointsBalance() ?? "0";
+  const [points, setPoints] = useState<number>(Number(getpointsBalance()) || 0);
   const role = getRole();
+
+  useEffect(()=>{
+    const refreshUser = async () => {
+        const res = await api.get('/auth/me'); 
+        const user = res.data;
+
+        updateUserInfo({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+        });
+
+        updatePointsBalance(user.points_balance);
+        setPoints(user.points_balance);
+    };
+    refreshUser();
+  },[])
 
   const initials = name
     .split(" ")
@@ -257,7 +277,7 @@ export default function AccountInfo() {
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                 disabled={deleting}
                 placeholder="SUPPRIMER"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-400"
+                className="w-full text-base border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-400"
               />
               {deleteError && <p className="text-xs text-red-500">{deleteError}</p>}
               <div className="flex gap-2">

@@ -5,6 +5,8 @@ import { getSearch } from "../../api/ClientServices";
 import truncateWords from "../../utils/truncateWords";
 import { useNavigate } from "react-router-dom";
 
+import { getRandomProducts } from "../../api/ClientServices";
+
 interface PropsSearch {
     onClose: () => void
 }
@@ -28,26 +30,7 @@ const categories = [
     { label: "Hygiène", emoji: "🧴",path:'categories/oiseau/4' },
 ]
 
-const suggestions = [
-    {
-        name: "Croquettes Premium pour chien",
-        desc: "Alimentation complète",
-        price: "199,00 DH",
-        image: "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=100&h=100&fit=crop",
-    },
-    {
-        name: "Litière agglomérante",
-        desc: "Absorption maximale",
-        price: "89,00 DH",
-        image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=100&h=100&fit=crop",
-    },
-    {
-        name: "Jouet souris interactive",
-        desc: "Pour chats joueurs",
-        price: "49,00 DH",
-        image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=100&h=100&fit=crop",
-    },
-]
+
 
 export default function SearchBox({ onClose }: PropsSearch) {
     const url = import.meta.env.VITE_API_URL
@@ -61,6 +44,18 @@ export default function SearchBox({ onClose }: PropsSearch) {
     const mid = Math.ceil(products.length / 2);
     const leftProducts = products.slice(0, mid);
     const rightProducts = products.slice(mid);
+    const [suggestions, setSuggestions] = useState<Product[]>([]);
+    useEffect(()=>{
+        const fetchSuggestions=async()=>{
+            try{
+                const res= await getRandomProducts();
+                setSuggestions((res.data.data ?? []).slice(0,4))
+            }catch(err){
+                console.error(err)
+            }
+        }
+        fetchSuggestions()
+    },[])
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -167,9 +162,11 @@ export default function SearchBox({ onClose }: PropsSearch) {
                                     <ul className="space-y-4">
                                         {suggestions.map((item) => (
                                             <li key={item.name}>
-                                                <button className="flex items-center gap-3 text-left w-full group">
+                                                <button 
+                                                onClick={()=>{navigate(`/get-product-details/${item.slug}`);onClose()}}
+                                                className="flex items-center gap-3 text-left w-full group">
                                                     <img
-                                                        src={item.image}
+                                                        src={`${url}/storage/${item.image}`}
                                                         alt={item.name}
                                                         className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                                                     />
@@ -177,7 +174,7 @@ export default function SearchBox({ onClose }: PropsSearch) {
                                                         <p className="text-sm font-semibold text-gray-900 group-hover:text-orange-500 transition truncate">
                                                             {item.name}
                                                         </p>
-                                                        <p className="text-xs text-gray-400 truncate">{item.desc}</p>
+                                                        <p className="text-xs text-gray-400 truncate">{item.description}</p>
                                                         <p className="text-sm font-bold text-orange-500 mt-0.5">
                                                             {item.price}
                                                         </p>
@@ -215,10 +212,11 @@ export default function SearchBox({ onClose }: PropsSearch) {
                                             <div className="grid grid-cols-3 gap-3">
                                                 {suggestions.map((item) => (
                                                     <button
+                                                        onClick={()=>{navigate(`/get-product-details/${item.slug}`);onClose()}}
                                                         key={item.name}
                                                         className="flex flex-col items-start gap-1.5 p-2.5 text-left bg-gray-50 rounded-xl border border-gray-200 hover:border-orange-300 transition"
                                                     >
-                                                        <img src={item.image} alt={item.name} className="w-full aspect-square object-cover rounded-lg" />
+                                                        <img src={`${url}/storage/${item.image}`} alt={item.name} className="w-full aspect-square object-cover rounded-lg" />
                                                         <span className="text-xs font-medium text-gray-900 truncate w-full">{item.name}</span>
                                                         <span className="text-xs font-semibold text-orange-500">{item.price}</span>
                                                     </button>

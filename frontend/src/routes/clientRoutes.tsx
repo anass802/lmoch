@@ -14,6 +14,7 @@ import ViewAnimalDetails from "../pages/client/ViewAnimalDetails";
 import ReservationPage from "../pages/client/reservations";
 import Terms from "../pages/Terms";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
+import SupportPage from "../pages/client/Supportpage";
 
 
 
@@ -37,7 +38,8 @@ export const ClientRoutes:RouteObject[]=[
             {path:'/cats/:id',element:<ViewAnimalDetails/>},
             {path:'reservations',element:<ReservationPage/>},
             {path:'terms',element:<Terms/>},
-            {path:'privacy',element:<PrivacyPolicy/>}
+            {path:'privacy',element:<PrivacyPolicy/>},
+            {path:'support',element:<SupportPage/>}
         ]
         
     }

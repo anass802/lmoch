@@ -67,7 +67,7 @@ export default function Information({ cities, onCityChange, form, setForm, error
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
-                                className={`w-full rounded-lg border  pl-10 pr-3 py-2.5 text-sm
+                                className={`w-full rounded-lg border  pl-10 pr-3 py-2.5 text-base
                                     ${errors.name ? "border-red-500 focus:ring-red-400" : "border-gray-200 focus:ring-orange-400"}
                                     text-gray-700 focus:outline-none focus:ring-2  focus:border-transparent`}
                                 value={form.name}
@@ -85,7 +85,7 @@ export default function Information({ cities, onCityChange, form, setForm, error
                         <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
-                                className={`w-full rounded-lg border  pl-10 pr-3 py-2.5 text-sm
+                                className={`w-full rounded-lg border  pl-10 pr-3 py-2.5 text-base
                                     ${errors.phone ? "border-red-500 focus:ring-red-400" : "border-gray-200 focus:ring-orange-400"}
                                     text-gray-700 focus:outline-none focus:ring-2  focus:border-transparent`}
                                 value={form.phone}
@@ -108,7 +108,7 @@ export default function Information({ cities, onCityChange, form, setForm, error
                             <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                             <input
                                 type="text"
-                                className={`w-full rounded-lg border pl-10 pr-8 py-2.5 text-sm
+                                className={`w-full rounded-lg border pl-10 pr-8 py-2.5 text-base
                                 ${errors.city ? "border-red-500 focus:ring-red-400" : "border-gray-200 focus:ring-orange-400"}
                                 text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent`}
                                 placeholder="Rechercher une ville..."
@@ -154,7 +154,7 @@ export default function Information({ cities, onCityChange, form, setForm, error
                         <div className="relative">
                             <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
-                                className={`w-full rounded-lg border  pl-10 pr-3 py-2.5 text-sm
+                                className={`w-full rounded-lg border  pl-10 pr-3 py-2.5 text-base
                                     ${errors.address ? "border-red-500 focus:ring-red-400" : "border-gray-200 focus:ring-orange-400"}
                                     text-gray-700 focus:outline-none focus:ring-2  focus:border-transparent`}
                                 value={form.address}

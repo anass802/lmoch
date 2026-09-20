@@ -128,7 +128,7 @@ export default function ViewProduct() {
     }, [emblaApi, suggestions]);
 
     const inStock = (product?.stock ?? 0) > 0;
-    const maxQty = Math.min(product?.stock ?? 1, 10);
+    const maxQty = Math.min(product?.stock ?? 1, product?.stock ?? 1);
 
     const handleAdd = () => {
         if (!product || !inStock) return;
@@ -298,14 +298,14 @@ export default function ViewProduct() {
                             <span className="w-10 text-center font-semibold text-[#1E3A6E]">
                                 {qty}
                             </span>
-                            <button
-                                type="button"
-                                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                                disabled={!inStock}
-                                className="w-10 h-10 flex items-center justify-center text-[#1E3A6E] hover:bg-[#FAF7F1] disabled:opacity-40"
-                            >
-                                +
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                                    disabled={!inStock}
+                                    className="w-10 h-10 flex items-center justify-center text-[#1E3A6E] hover:bg-[#FAF7F1] disabled:opacity-40"
+                                >
+                                    +
+                                </button>
                         </div>
 
                         <button

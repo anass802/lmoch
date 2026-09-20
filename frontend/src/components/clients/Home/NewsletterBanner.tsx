@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Capacitor } from '@capacitor/core';
-import { NewsletterSubscriber } from "../../../api/ClientServices";
-
+import { useNavigate } from "react-router-dom";
 
 const InstagramIcon = (props: any) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
@@ -11,22 +10,10 @@ const InstagramIcon = (props: any) => (
     </svg>
 );
 export default function NewsletterBanner() {
-    const [email, setEmail] = useState("");
-    
+    const navigate = useNavigate()
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
-        try{
-            const res=await NewsletterSubscriber(email)
-            if(res.data.message==='Subscribed successfully'){
-                alert(res.data.message)
-            }
 
-        }catch(err){
-            console.error(err)
-        }
-        console.log("Inscription:", email);
-    };
+
 
     return (
         <section className="max-w-[1280px] mx-auto px-4 py-10">
@@ -47,42 +34,31 @@ export default function NewsletterBanner() {
                         <span role="img" aria-label="pattes">🐾</span>
                     </h2>
                     <p className="text-[#C3CEE3] text-base md:text-lg mb-8">
-                        Recevez nos meilleures offres et conseils directement dans votre boîte mail.
+                        Créez votre compte pour recevoir des notifications exclusives, nos meilleures offres et des conseils directement.
                     </p>
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 max-w-xl mx-auto"
+                    <button
+                        onClick={() => navigate('auth/acount')}
+                        type="submit"
+                        className="bg-[#FF7A45] hover:bg-[#FF6A2E] text-white font-semibold px-8 py-3.5 rounded-full transition-colors whitespace-nowrap"
                     >
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Votre adresse email"
-                            className="flex-1 bg-white text-[#2a2528] placeholder-gray-400 rounded-full px-6 py-3.5 text-[15px] outline-none focus:ring-2 focus:ring-[#FF7A45]/50 transition-shadow"
-                        />
-                        <button
-                            type="submit"
-                            className="bg-[#FF7A45] hover:bg-[#FF6A2E] text-white font-semibold px-8 py-3.5 rounded-full transition-colors whitespace-nowrap"
-                        >
-                            Être alerté
-                        </button>
-                    </form>
-                   
+                        Être alerté
+                    </button>
+
+
 
                 </div>
-                 <div className="relative z-10 max-w-2xl mx-auto flex justify-center">
-                        {Capacitor.isNativePlatform() && (
-                            <button
-                                onClick={() => window.open("https://www.instagram.com/ztx_tech/", "_blank")}
-                                className="flex items-center gap-1.5 text-[#8896B3] text-sm hover:text-white transition-colors cursor-pointer mt-3"
-                            >
-                                Made by <span className="font-medium">ztx</span>
-                                <InstagramIcon width={14} height={14} />
-                            </button>
-                        )}
-                    </div>
+                <div className="relative z-10 max-w-2xl mx-auto flex justify-center">
+                    {Capacitor.isNativePlatform() && (
+                        <button
+                            onClick={() => window.open("https://www.instagram.com/ztx_tech/", "_blank")}
+                            className="flex items-center gap-1.5 text-[#8896B3] text-sm hover:text-white transition-colors cursor-pointer mt-3"
+                        >
+                            Made by <span className="font-medium">ztx</span>
+                            <InstagramIcon width={14} height={14} />
+                        </button>
+                    )}
+                </div>
             </div>
         </section>
     );

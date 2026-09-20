@@ -18,8 +18,11 @@ class FcmService
         if ($token) {
             $tokens = [$token];
         } else {
-            // Find all users with admin/staff role or simply all users with fcm_token set
-            $tokens = User::whereNotNull('fcm_token')
+            // Find all users with admin role with fcm_token set
+            $tokens = User::whereHas('role', function ($query) {
+                    $query->where('name', 'admin');
+                })
+                ->whereNotNull('fcm_token')
                 ->where('fcm_token', '!=', '')
                 ->pluck('fcm_token')
                 ->toArray();

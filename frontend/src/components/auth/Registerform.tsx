@@ -113,7 +113,7 @@ export default function RegisterForm() {
                   onChange={handleChange}
                   placeholder="Votre nom complet"
                   required
-                  className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
                 />
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function RegisterForm() {
                   onChange={handleChange}
                   placeholder="06 12 34 56 78"
                   required
-                  className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
                 />
               </div>
             </div>
@@ -147,7 +147,7 @@ export default function RegisterForm() {
                 onChange={handleChange}
                 placeholder="exemple@email.com"
                 required
-                className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function RegisterForm() {
                 onChange={handleChange}
                 placeholder="Minimum 8 caractères"
                 required
-                className="w-full rounded-lg border border-gray-300 pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full rounded-lg border border-gray-300 pl-10 pr-10 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
               <button
                 type="button"
@@ -189,7 +189,7 @@ export default function RegisterForm() {
                 onChange={handleChange}
                 placeholder="Confirmez votre mot de passe"
                 required
-                className={`w-full rounded-lg border pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 ${
+                className={`w-full rounded-lg border pl-10 pr-10 py-2.5 text-base focus:outline-none focus:ring-2 ${
                   form.password_confirmation && !passwordsMatch
                     ? "border-red-400 focus:ring-red-300"
                     : "border-gray-300 focus:ring-orange-400"

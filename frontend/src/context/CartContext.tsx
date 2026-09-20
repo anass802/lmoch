@@ -1,6 +1,7 @@
 // src/context/CartContext.tsx
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect,useRef,useCallback, type ReactNode } from "react";
 import type { Product } from "../types/Clients";
+import api from "../api/api";
 
 export interface CartVariant {
   id: number;
@@ -16,6 +17,7 @@ export interface CartItem {
   name: string;
   price: number;
   category: string;
+  stock:number;
   image: string | null;     
   variant: CartVariant | null;
   value: string | null;
@@ -26,6 +28,7 @@ interface CartContextType {
   items: CartItem[];
   isCartOpen: boolean;
   openCart: () => void;
+  syncCart: () => Promise<void>;  
   closeCart: () => void;
   addToCart: (product: Product, quantity?: number, variant?: CartVariant | null) => void;
   removeFromCart: (lineKey: string) => void;
@@ -50,6 +53,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [];
     }
   });
+  const itemsRef = useRef(items);
+  itemsRef.current = items; 
 
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -57,7 +62,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
-  const openCart = () => setIsCartOpen(true);
+
+const syncCart = useCallback(async () => {
+  const ids = [...new Set(itemsRef.current.map((i) => i.id))];
+  if (ids.length === 0) return;
+
+  try {
+    const res = await api.post("/cart/sync", { ids });
+    if (!Array.isArray(res.data)) return;
+
+    const map = new Map<number, any>(res.data.map((p: any) => [p.id, p]));
+
+    setItems((prev) =>
+      prev.flatMap((item) => {
+        if (!ids.includes(item.id)) return [item]; // added after sync started
+        const p = map.get(item.id);
+        const stock = Number(p?.stock ?? 0);
+        if (!p || stock <= 0) return [];
+        return [{
+          ...item,
+          name: p.name,
+          price: Number(p.price),
+          is_promo: Boolean(Number(p.is_promo)),
+          stock,
+          quantity: Math.min(item.quantity, stock),
+        }];
+      })
+    );
+  } catch (e) {
+    console.error("Cart sync failed", e);
+  }
+}, []);
+useEffect(() => {
+  syncCart();
+}, [syncCart]);
+
+  const openCart = () => {
+  setIsCartOpen(true);
+  syncCart();
+};
   const closeCart = () => setIsCartOpen(false);
 
   const addToCart = (product: Product, quantity: number = 1, variant: CartVariant | null = null) => {
@@ -80,6 +123,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           name: product.name,
           price: Number(product.price),
           is_promo:Number(product.is_promo),
+          stock:Number(product.stock),
           category: product.category?.name ?? "",
           image: variant?.image_path ?? product.image ?? null,
           value: variant?.attributes.find((attr) => !attr.hex_code)?.value ?? null,
@@ -113,6 +157,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items,
         isCartOpen,
         openCart,
+        syncCart,
         closeCart,
         addToCart,
         removeFromCart,

@@ -95,10 +95,10 @@ export default function HeroCarousel() {
   };
 
   return (
-    <section className="mt-4 sm:mt-6">
-      <div className="max-w-[1280px] mx-auto px-3 sm:px-4">
+    <section className="mt-4  px-4  rounded-2xl">
+      
         <div
-          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-black w-full aspect-[1916/821]"
+          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-black w-full aspect-[1916/821] "
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -151,7 +151,7 @@ export default function HeroCarousel() {
             ))}
           </div>
         </div>
-      </div>
+      
     </section>
   );
 }

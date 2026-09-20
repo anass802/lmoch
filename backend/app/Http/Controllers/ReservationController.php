@@ -16,7 +16,8 @@ class ReservationController extends Controller
             'age_mois'     => 'required|integer|min:0|max:400',
             'telephone'    => 'required|string|max:30',
             'date_arrivee' => 'required|date|after_or_equal:today',
-            'date_sortie'  => 'required|date|after:date_arrivee',          
+            'date_sortie'  => 'required|date|after:date_arrivee',
+            'sterilise'    => 'required|boolean',       
         ]);
 
         $reservation = Reservation::create($validated);

@@ -2,6 +2,9 @@ import { CheckCircle2, X, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from '../../assets/images/logo/lmoch.png'
 import jsPDF from "jspdf";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 
 type OrderItem = {
     id: number | string;
@@ -42,6 +45,7 @@ export default function SuccessModal({ open, message, order, onClose }: Props) {
         const orange = "#F97316";
         const lightGray = "#F3F4F6";
         const textGray = "#374151";
+        const fileName = `recu-commande-${Date.now()}.pdf`;
 
         // --- Header band ---
         doc.setFillColor(navy);
@@ -183,7 +187,30 @@ export default function SuccessModal({ open, message, order, onClose }: Props) {
         doc.setFont("helvetica", "normal");
         doc.text("Merci pour votre commande !", pageWidth / 2, pageHeight - 10, { align: "center" });
 
-        doc.save(`recu-commande-${Date.now()}.pdf`);
+
+        if (Capacitor.isNativePlatform()) {
+            // Get PDF as base64 
+            const pdfBase64 = doc.output("datauristring").split(",")[1];
+
+            try {
+                const result = await Filesystem.writeFile({
+                    path: fileName,
+                    data: pdfBase64,
+                    directory: Directory.Cache, // Cache is writable + shareable without extra perms
+                });
+
+                await Share.share({
+                    title: "Reçu de commande",
+                    url: result.uri,
+                    dialogTitle: "Partager ou enregistrer le reçu",
+                });
+            } catch (err) {
+                console.error("Erreur lors de la génération du reçu :", err);
+            }
+        } else {
+            // Web fallback 
+            doc.save(fileName);
+        }
     };
 
     // helper: load an imported image asset and convert to base64 for jsPDF

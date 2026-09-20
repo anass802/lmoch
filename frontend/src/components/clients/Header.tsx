@@ -1,6 +1,6 @@
 import logo from '../../assets/images/logo/lmoch.png'
 import { useState, useEffect } from 'react';
-import { Search, User, ShoppingCart, ChevronDown, Menu, X, Truck, Tag,PawPrint,CalendarCheck } from 'lucide-react';
+import { Search, User, ShoppingCart, ChevronDown, Menu, X, Truck, Tag, PawPrint, CalendarCheck,LifeBuoy } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getSpecies } from '../../api/ClientServices';
 import type { Species } from '../../types/Clients';
@@ -68,9 +68,13 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
     }
 
     return (
-        <div className="flex flex-col sticky top-0 z-50 bg-white">
+        <div className="flex flex-col sticky top-0 z-50 bg-white"
+            style={{ paddingTop: "env(safe-area-inset-top)" }}
+        >
             {/* top banner */}
-            <div className="flex gap-1.5 justify-center items-center px-3 py-2 bg-[#1E3A6E]">
+            <div className="flex gap-1.5 justify-center items-center px-3 py-2 bg-[#1E3A6E]"
+                
+            >
                 <Truck className="w-3.5 h-3.5 text-white shrink-0" />
                 <span className="text-white text-[11px] sm:text-xs text-center leading-tight">
                     <span className="hidden sm:inline">Livraison gratuite à partir de </span>
@@ -170,7 +174,13 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
                     >
                         Reservation
                     </button>
-                    
+                    <button
+                        onClick={() => { setActive("reservation"); navigate('/support'); }}
+                        className={`py-2 font-semibold text-sm transition-colors ${active === "cats" ? "text-[#FF7A45]" : "text-[#1A1A1A] hover:text-[#FF7A45]"}`}
+                    >
+                        Support
+                    </button>
+
                 </div>
 
                 {/* icons */}
@@ -191,13 +201,16 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
             {/* mobile drawer */}
             <div
                 className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                
             >
                 <div
                     className="absolute inset-0 bg-black/40"
+                    
                     onClick={() => setMobileOpen(false)}
                 />
                 <div
                     className={`absolute left-0 top-0 h-full w-[82%] max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+                    style={{ paddingTop: "env(safe-area-inset-top)" }}
                 >
                     <div className="flex items-center justify-between px-5 py-4 border-b border-[#E7E4DC]">
                         <div className="flex items-center gap-2">
@@ -244,7 +257,7 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
 
                                     {hasDropdown && (
                                         <div
-                                            className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-96" : "max-h-0"}`}
+                                            className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-[1000px]" : "max-h-0"}`}
                                         >
                                             <div className="bg-[#FAFAF8] pb-2">
                                                 <button
@@ -289,6 +302,13 @@ export default function HeaderClient({ onOpenModal }: PropsHeader) {
                         >
                             <CalendarCheck size={20} className="text-orange-500" />
                             Reservation
+                        </button>
+                        <button
+                            onClick={() => handleMobileNavigate('/support', 'support')}
+                            className={`w-full flex items-center gap-2 text-left px-5 py-3.5 text-sm font-semibold ${active === "support" ? "text-[#FF7A45]" : "text-[#16274b]"}`}
+                        >
+                            <LifeBuoy size={20} className="text-[#16274b]" />
+                            Support
                         </button>
                     </div>
                 </div>
